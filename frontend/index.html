@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindForge 心智锻造 · 高压表达力训练</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/token.css?v=20260820.10" />
+  <link rel="stylesheet" href="/styles/app.css?v=20260820.10" />
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav">
+  <div class="container">
+    <div class="logo"><span class="mark">M</span> MindForge 心智锻造</div>
+    <span class="anchor">训练工具 · 非招聘决策</span>
+    <span class="spacer"></span>
+    <div class="nav-actions">
+      <span class="model-pill" id="modelPill" title="模型接入状态">检测中…</span>
+      <button class="icon-btn" id="navHelp" title="帮助中心" aria-label="帮助">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+      </button>
+      <button class="nav-pill" id="navData" title="数据管理">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span>数据管理</span>
+      </button>
+      <button class="nav-pill" id="navDash" title="数据看板">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5M4 19h16M8 16v-6M12 16V8M16 16v-3"/></svg>
+        <span>数据看板</span>
+      </button>
+      <button class="btn btn-primary" id="navStart" style="padding:9px 20px;font-size:14px">开始训练</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== LANDING ===================== -->
+<div id="landing">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="badge">⚡ 高压心理脱敏 × 表达力即时教练</span>
+        <h1>把临场表达，<br>练成<span class="em">肌肉记忆</span>。</h1>
+        <p class="lead">MindForge 是面向求职与考研复试的高压训练场。在可控的施压中，把紧张练成从容——我们不评判你，我们只赋能你。</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" id="heroStart">开始训练</button>
+          <button class="btn btn-ghost" id="heroHow">了解机制</button>
+        </div>
+        <div class="tiny" style="color:var(--ink-400);margin-top:10px">支持文本对话训练与实时语音对话训练 · 离线识别 · AI 语音播报 · 全程免费</div>
+      </div>
+      <div class="hero-visual">
+        <div class="float-card" id="parallaxCard">
+          <div class="chat-mini">
+            <div class="cm-row"><div class="cm-avatar int">面</div><div class="cm-bubble int">请谈谈你简历上最大的挑战。</div></div>
+            <div class="cm-row user"><div class="cm-avatar usr">你</div><div class="cm-bubble usr">然后……嗯……我觉得就是说……</div></div>
+            <div class="cm-row"><div class="cm-avatar int">面</div><div class="cm-bubble int">所以，挑战具体指什么？先亮观点。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust">
+    <div class="container trust-grid">
+      <div class="trust-item"><div class="num">1270万</div><div class="lbl">2026 届毕业生规模</div></div>
+      <div class="trust-item"><div class="num">388万</div><div class="lbl">2025 考研报名人数</div></div>
+      <div class="trust-item"><div class="num">98:1</div><div class="lbl">2026 国考报录比</div></div>
+      <div class="trust-item"><div class="num">700+</div><div class="lbl">春招启用 AI 面试官企业</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Core Capabilities</div>
+        <h2>三段式训练，把焦虑变成掌控感</h2>
+        <p>选择场景、调节施压强度，在真实对话里打磨表达力，结束后拿到结构化成长报告。</p>
+      </div>
+      <div class="cards">
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></div><h3>可调施压模拟</h3><p>温和 / 标准 / 高压三档，把"面试官施压"作为可调节的训练模块，绝不人身攻击。</p></div>
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>表达力即时教练</h3><p>每轮作答后给出填充词、逻辑、情绪三类建议，前端正则统计零推理成本。</p></div>
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg></div><h3>结构化成长报告</h3><p>语言组织 / 逻辑清晰 / 情绪稳定 / 改进建议四维评分，附本地客观统计，可导出。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="bigtype">你不需要更聪明，<br>你只需要<span class="em">更从容</span>地表达。</div>
+      <div class="footer-bottom">
+        <div class="tiny">© 2026 MindForge 心智锻造 · 训练工具，非招聘决策</div>
+        <button class="btn btn-primary" id="footerStart" style="padding:11px 22px;font-size:14px">免费开始训练</button>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ===================== VOICE MODE（实时语音对话） ===================== -->
+<div class="voice-view" id="voiceView">
+  <div class="vv-header">
+    <button class="btn btn-ghost" id="voiceBack">← 返回</button>
+    <div class="vv-title">🎙️ 实时语音对话<span class="tiny" style="color:var(--ink-400);font-weight:400">离线识别 · AI 播报 · 免费</span></div>
+  </div>
+  <div class="vv-stage">
+    <div class="vw-orb idle" id="voiceOrb" title="播报中点击可打断">🎙️</div>
+    <div class="vw-wave" id="voiceWave" aria-hidden="true"></div>
+    <div class="vw-status" id="voiceStatus">点击「开始对话」即可交谈</div>
+    <div class="vv-partial" id="voicePartial"></div>
+  </div>
+  <div class="vv-chat" id="voiceChat"></div>
+  <div class="vv-controls">
+    <button class="btn btn-primary" id="voiceToggle">开始对话</button>
+    <span class="tiny" style="color:var(--ink-400)">说一句话，AI 会用语音回答；播报时点击光圈或状态可打断</span>
+  </div>
+</div>
+
+<!-- ===================== DASHBOARD VIEW（数据看板） ===================== -->
+<div id="dashboard">
+  <div class="db-head">
+    <button class="icon-btn" id="dbBack" title="返回首页"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="db-title">数据看板<span class="tiny">近几次训练 / 语音对话评分趋势 · 本地</span></div>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" id="dbStart" style="padding:9px 20px;font-size:14px">开始训练</button>
+  </div>
+  <div class="db-body" id="dbBody"></div>
+</div>
+
+<!-- ===================== TRAINING VIEW ===================== -->
+<div id="training">
+  <div class="train-head">
+    <button class="icon-btn" id="trainBack" title="返回首页"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="th-scene" id="thScene">校招面试</span>
+    <span class="th-chip" id="thLevel"><span class="dot" style="background:var(--lvl-std)"></span>标准</span>
+    <span class="spacer"></span>
+    <button class="btn btn-text" id="trainHelp" style="font-size:14px">帮助</button>
+  </div>
+  <div class="train-body">
+    <div class="chat-col">
+      <div class="chat-scroll" id="chatScroll"></div>
+      <div class="input-bar">
+        <textarea id="userInput" rows="1" placeholder="在这里作答……（Enter 发送，Shift+Enter 换行）"></textarea>
+        <button class="mic-btn" id="micBtn" title="语音输入（浏览器识别 · 音频不上传）" aria-label="语音输入"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4"/></svg></button>
+        <button class="btn btn-primary send-btn" id="sendBtn" title="发送（Enter）" aria-label="发送消息">发送</button>
+        <div class="guard" id="guardBar">
+          <div class="guard-level" id="guardLevel" role="group" aria-label="调整施压档位" title="随时切换施压档位">
+            <button class="gl-opt" data-level="gentle"><span class="dot" style="background:var(--lvl-easy)"></span>温和</button>
+            <button class="gl-opt sel" data-level="standard"><span class="dot" style="background:var(--lvl-std)"></span>标准</button>
+            <button class="gl-opt" data-level="hard"><span class="dot" style="background:var(--lvl-hard)"></span>高压</button>
+          </div>
+          <button id="gPause"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>暂停</button>
+          <button class="end" id="gEnd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>结束</button>
+        </div>
+      </div>
+    </div>
+    <div class="coach-col" id="coachCol">
+      <div class="coach-head"><div class="ch-t"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/></svg> 教练 · 实时反馈</div></div>
+      <div class="coach-scroll" id="coachScroll">
+        <div class="metric"><div class="mt"><span>填充词频次</span><span class="dot" id="dotFiller" style="background:var(--metric-good)"></span></div><div class="mv" id="mFiller">0 次/千字</div></div>
+        <div class="metric"><div class="mt"><span>平均句长</span><span class="dot" id="dotLen" style="background:var(--metric-good)"></span></div><div class="mv" id="mLen">— 字</div></div>
+        <div class="metric"><div class="mt"><span>停顿 / 语速</span><span class="dot" id="dotPace" style="background:var(--metric-good)"></span></div><div class="mv" id="mPace">—</div></div>
+        <div class="emotion-hint" id="emotionHint" style="display:none">
+          <div class="eh-head">语音情绪提示<span class="eh-caveat">近似信号 · 非评测</span></div>
+          <div class="eh-body" id="emotionHintBody"></div>
+        </div>
+        <div class="advice"><div class="at"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c.7.7 1 1.5 1 2h6c0-.5.3-1.3 1-2a6 6 0 0 0-4-10z"/></svg>本轮建议</div><ol id="adviceList"><li class="muted">进入模拟后，教练会在这里给出表达力建议。</li></ol></div>
+      </div>
+      <div class="coach-foot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> 训练工具 · 本地处理 · 数据可删除</div>
+    </div>
+  </div>
+</div>
+<button class="mobile-coach-toggle" id="coachToggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/></svg> 教练面板</button>
+
+<!-- ===================== SCENE/LEVEL MODAL ===================== -->
+<div class="overlay" id="configOverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3>开始你的训练</h3>
+    <div class="sub">选择训练方式，再选场景与施压强度；可先补充背景信息，让 AI 更懂你。随时可调整档位、暂停或结束。</div>
+    <!-- ① 训练方式 -->
+    <div style="margin-bottom:22px">
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">① 训练方式</div>
+      <div class="choice-grid" id="modeGrid">
+        <button class="choice sel" data-mode="text"><div class="ct">💬 文本对话训练</div><div class="cd">打字交流，教练逐轮给表达力反馈</div></button>
+        <button class="choice" data-mode="voice"><div class="ct">🎙️ 实时语音对话训练</div><div class="cd">开口即说，AI 语音播报，离线识别</div></button>
+      </div>
+    </div>
+    <!-- ② 选择场景 -->
+    <div style="margin-bottom:22px">
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">② 选择场景</div>
+      <div class="choice-grid" id="sceneGrid">
+        <button class="choice" data-scene="postgrad_interview"><div class="ct">🎓 考研复试</div><div class="cd">临场表达定生死，"上岸"强驱动</div></button>
+        <button class="choice" data-scene="campus_recruit"><div class="ct">💼 校招面试</div><div class="cd">短期高频，需要真实模拟 + 即时纠错</div></button>
+      </div>
+    </div>
+    <!-- ③ 选择施压档位 -->
+    <div>
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">③ 选择施压档位</div>
+      <div class="seg" id="levelSeg">
+        <div class="seg-opt" data-level="gentle" data-color="var(--lvl-easy)"><span class="dot" style="background:var(--lvl-easy)"></span><div class="sn">温和</div><div class="sd">多鼓励 · 平和</div></div>
+        <div class="seg-opt" data-level="standard" data-color="var(--lvl-std)"><span class="dot" style="background:var(--lvl-std)"></span><div class="sn">标准</div><div class="sd">适度质疑</div></div>
+        <div class="seg-opt" data-level="hard" data-color="var(--lvl-hard)"><span class="dot" style="background:var(--lvl-hard)"></span><div class="sn">高压</div><div class="sd">冷峻追问 · 绝不人身攻击</div></div>
+      </div>
+      <div id="configErr" class="tiny" style="color:var(--metric-bad);margin-top:10px;min-height:16px"></div>
+    </div>
+    <!-- ④ 背景信息 -->
+    <div style="margin-top:22px">
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">④ 背景信息（可选）<span class="tiny" style="font-weight:400;color:var(--ink-400)">上传简历或手填信息，让 AI 面试更懂你</span></div>
+      <div class="seg seg-sm" id="profileMode">
+        <div class="seg-opt sel" data-mode="upload"><div class="sn">上传简历</div></div>
+        <div class="seg-opt" data-mode="form"><div class="sn">手填信息</div></div>
+      </div>
+      <div id="profileUploadBox" style="margin-top:12px">
+        <input type="file" id="resumeFile" accept=".pdf,.docx,.txt,.md" hidden />
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="resumePick" style="padding:8px 14px;font-size:13px">选择简历文件</button>
+          <span id="resumeName" class="tiny" style="color:var(--ink-500)">支持 PDF / Word / TXT（≤5MB）</span>
+        </div>
+        <div id="resumeStatus" class="tiny" style="margin-top:6px;min-height:16px;color:var(--ink-400)"></div>
+      </div>
+      <div id="profileFormBox" style="display:none;margin-top:12px;flex-direction:column;gap:8px">
+        <input class="pf-input" id="pfSchool" placeholder="院校（如：上海交通大学）" />
+        <input class="pf-input" id="pfMajor" placeholder="专业（如：计算机科学与技术）" />
+        <input class="pf-input" id="pfDegree" placeholder="学历（如：硕士在读）" />
+        <input class="pf-input" id="pfTarget" placeholder="求职意向 / 目标岗位（如：后端开发工程师）" />
+      </div>
+      <div id="profileInfo" class="tiny" style="margin-top:8px;color:var(--ink-400);min-height:16px"></div>
+    </div>
+    <div class="model-status" id="modelStatusBox">
+      <span id="modelStatusText" class="tiny">模型状态检测中…</span>
+      <button class="btn btn-text" id="modelProbe" style="font-size:13px;padding:4px 10px">测试连接</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="configCancel">稍后</button>
+      <button class="btn btn-primary" id="configStart" disabled style="opacity:.5">进入模拟</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== REPORT MODAL ===================== -->
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:600px">
+    <button class="modal-x" id="reportX" aria-label="关闭">×</button>
+    <div id="reportLoading" style="display:none">
+      <div class="spinner"></div>
+      <div>分析师正在生成报告…</div>
+    </div>
+    <h3 id="reportTitle">你的成长报告</h3>
+    <div class="sub" id="reportSub">分析师基于本次对话生成</div>
+    <div class="report-grid">
+      <div class="dim"><span class="dl">语言组织</span><div class="bar"><i id="barLang"></i></div><span class="dim-score" id="scoreLang">0/5</span></div>
+      <div class="dim"><span class="dl">逻辑清晰度</span><div class="bar"><i id="barLogic"></i></div><span class="dim-score" id="scoreLogic">0/5</span></div>
+      <div class="dim"><span class="dl">情绪稳定性</span><div class="bar"><i id="barEmo"></i></div><span class="dim-score" id="scoreEmo">0/5</span></div>
+      <div class="report-stats" id="reportStats"></div>
+      <div class="report-advice"><strong style="color:var(--ink-900)">改进建议</strong><ol id="reportAdvice" style="margin-top:8px"></ol></div>
+      <div class="report-advice" id="reportCoachBox" style="display:none"><strong style="color:var(--ink-900)">本轮教练建议</strong><ol id="reportCoachList" style="margin-top:8px"></ol></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="reportAgain">再来一次</button>
+      <button class="btn btn-ghost" id="reportHome">返回首页</button>
+      <button class="btn btn-primary" id="reportExport">导出报告</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAUSE MODAL ===================== -->
+<div class="overlay" id="pauseOverlay">
+  <div class="modal pause-card">
+    <div class="breath"><span class="b-ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span></div>
+    <h3>先深呼吸，准备好了再继续</h3>
+    <p>你随时掌握节奏。跟随圆圈放慢呼吸，不需要证明什么。</p>
+    <button class="btn btn-primary btn-block" id="resumeBtn">恢复训练</button>
+  </div>
+</div>
+
+<!-- ===================== CONFIRM MODAL ===================== -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:420px" role="alertdialog" aria-modal="true">
+    <h3 id="cfTitle">确认操作</h3>
+    <div class="sub" id="cfText"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cfCancel">取消</button>
+      <button class="btn btn-primary" id="cfOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== REBOUND POPUP ===================== -->
+<div class="overlay rebound" id="reboundOverlay">
+  <div class="modal">
+    <h3>看起来有点紧 🌿</h3>
+    <div class="sub">高压训练本来就会让人不舒服，这很正常。需要降低强度吗？我们随时在这里。</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="rbKeep">继续当前强度</button>
+      <button class="btn btn-primary" id="rbDown">降低强度</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DATA MANAGEMENT MODAL ===================== -->
+<div class="overlay" id="dataOverlay">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-x" id="dataX" aria-label="关闭">×</button>
+    <h3>数据管理</h3>
+    <div class="sub">对话与指标仅存于本地浏览器（localStorage），原始音频不上传。你可随时删除。</div>
+    <div class="dm-list" id="dataList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-text" id="dataDash" style="margin-right:auto">查看数据看板</button>
+      <button class="btn btn-ghost" id="dataClear">清空全部本地数据</button>
+      <button class="btn btn-primary" id="dataClose">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HISTORY MODAL（查看训练记录，位于数据层之后以便置顶） ===================== -->
+<div class="overlay" id="historyOverlay">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-x" id="historyX" aria-label="关闭">×</button>
+    <h3 id="historyTitle">训练记录</h3>
+    <div class="sub" id="historySub"></div>
+    <div class="history-scroll" id="historyScroll"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="historyClose">返回</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== HELP DRAWER ===================== -->
+<div class="drawer" id="helpDrawer">
+  <div class="drawer-head"><h3 style="font-size:18px">帮助中心</h3><button class="icon-btn" id="helpClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="drawer-body">
+    <div class="help-block"><h4>我们是什么</h4><p>MindForge 是高压心理脱敏与表达力训练工具，定位为"训练工具、非招聘决策"。我们不为任何机构筛选你，只为帮你更从容。</p></div>
+    <div class="help-block"><h4>施压机制</h4><p>面试官由 AI 扮演，强度由你选择的档位决定：温和多鼓励、标准适度质疑、高压冷峻追问（但绝不人身攻击或侮辱）。</p></div>
+    <div class="help-block"><h4>安全护栏</h4><p>训练中你可随时「调整档位」（温和 / 标准 / 高压自由切换，下一轮生效）、「暂停」（呼吸引导）、「结束」（生成报告）。若系统检测到你明显焦虑，会主动建议降低强度。</p></div>
+    <div class="help-block"><h4>数据隐私</h4><div class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> 本地优先处理 · 数据可删除</div><p style="margin-top:8px">对话与指标存于本地浏览器，原始音频不上传，报告可本地导出。</p><p style="margin-top:8px">语音输入：Edge 默认使用本地离线识别（零延迟、音频不出设备）；Chrome 优先浏览器语音服务、不可用时自动切离线。离线识别含自适应增益，小声说话也能识别；结果受环境、口音、设备影响，可编辑后发送。「语音情绪提示」为本地近似信号，仅作提示、不构成评价。</p><p style="margin-top:8px">实时语音对话：实时转写由本机离线识别完成，**最终识别由本机 whisper 引擎校准**（音频仅在本机服务处理、不离开设备、不存储）。</p></div>
+  </div>
+</div>
+
+<!-- ===================== PRINT REPORT（导出 PDF 用，仅打印时显示） ===================== -->
+<div class="banner" id="banner"><span id="bannerMsg"></span><button id="bannerRetry">重试</button></div>
+<div class="toast" id="toast"></div>
+
+<script src="/js/vendor/jspdf.umd.min.js"></script>
+<script src="/js/vendor/vosk.js"></script>
+<script type="module" src="/js/app.js?v=20260820.10"></script>
+</body>
+</html>

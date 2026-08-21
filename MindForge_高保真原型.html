@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindForge 心智锻造 · 高保真交互原型（v2.0 浅色）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper-bg:#F7F5F2; --surface:#FFFFFF; --surface-alt:#F1EFEC;
+  --ink-900:#2B2B2B; --ink-700:#33312E; --ink-500:#6F6A62; --ink-400:#9A958D;
+  --line:#E8E5E1;
+  --accent:#1F4E4A; --accent-700:#163831; --accent-tint:#E4ECEA;
+  --lvl-easy:#6B8E6B; --lvl-std:#6B7C8E; --lvl-hard:#B08A4E;
+  --metric-good:#5C8A5C; --metric-warn:#C2A24B; --metric-bad:#B06B5C;
+  --shadow:0 2px 8px rgba(0,0,0,.04); --shadow-md:0 8px 28px rgba(0,0,0,.06);
+  --r-pill:999px; --r-card:12px; --r-overlay:16px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--paper-bg);color:var(--ink-700);line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{color:var(--ink-900);font-weight:700;letter-spacing:-.01em}
+a{color:var(--accent);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.muted{color:var(--ink-500)}
+.tiny{font-size:13px;color:var(--ink-400)}
+
+/* ===== Nav ===== */
+.nav{position:sticky;top:0;z-index:50;background:rgba(247,245,242,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .container{display:flex;align-items:center;height:58px;gap:16px}
+.logo{font-weight:800;font-size:18px;color:var(--ink-900);display:flex;align-items:center;gap:8px}
+.logo .mark{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff}
+.nav .anchor{font-size:13px;color:var(--ink-500);margin-left:8px}
+.nav .spacer{flex:1}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--ink-500);border:1px solid transparent;transition:.2s}
+.icon-btn:hover{background:var(--surface);border-color:var(--line);color:var(--ink-900)}
+
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 26px;border-radius:var(--r-pill);font-weight:600;font-size:15px;transition:transform .2s ease,background .2s ease;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-700)}
+.btn-ghost{background:transparent;color:var(--ink-900);border:1px solid var(--ink-500)}
+.btn-ghost:hover{border-color:var(--ink-900);background:var(--surface)}
+.btn-text{color:var(--accent);font-weight:600;padding:8px 4px}
+.btn-text:hover{text-decoration:underline}
+.btn-block{width:100%}
+
+/* ===== Hero ===== */
+.hero{padding:84px 0 64px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-tint);color:var(--accent-700);font-size:13px;font-weight:600;padding:7px 14px;border-radius:var(--r-pill);margin-bottom:22px}
+.hero h1{font-size:clamp(40px,5.2vw,68px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin-bottom:20px}
+.hero h1 .em{color:var(--accent)}
+.hero p.lead{font-size:18px;color:var(--ink-500);max-width:480px;margin-bottom:32px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+.hero-visual{position:relative}
+.float-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-overlay);box-shadow:var(--shadow-md);padding:18px;transform:translateY(0);transition:transform .2s}
+.chat-mini{display:flex;flex-direction:column;gap:12px}
+.cm-row{display:flex;gap:10px;align-items:flex-end}
+.cm-row.user{flex-direction:row-reverse}
+.cm-avatar{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
+.cm-avatar.int{background:var(--ink-700)}
+.cm-avatar.usr{background:var(--accent)}
+.cm-bubble{max-width:78%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5}
+.cm-bubble.int{background:var(--surface-alt);color:var(--ink-700);border-bottom-left-radius:4px}
+.cm-bubble.usr{background:var(--accent-tint);color:var(--ink-900);border-bottom-right-radius:4px}
+
+/* ===== Trust strip ===== */
+.trust{padding:36px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface-alt)}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.trust-item .num{font-size:34px;font-weight:800;color:var(--accent);letter-spacing:-.02em}
+.trust-item .lbl{font-size:13px;color:var(--ink-500);margin-top:4px}
+
+/* ===== Sections ===== */
+.section{padding:88px 0}
+.section-head{max-width:640px;margin-bottom:48px}
+.section-head .eyebrow{color:var(--accent);font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px}
+.section-head h2{font-size:clamp(28px,3.4vw,40px);line-height:1.2;margin-bottom:14px}
+.section-head p{color:var(--ink-500);font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feature{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:26px;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease}
+.feature:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.feature .fic{width:44px;height:44px;border-radius:12px;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;margin-bottom:16px}
+.feature h3{font-size:19px;margin-bottom:8px}
+.feature p{font-size:14px;color:var(--ink-500)}
+
+/* ===== Footer big type ===== */
+.footer{background:var(--surface);border-top:1px solid var(--line);padding:72px 0 40px;margin-top:40px}
+.footer .bigtype{font-size:clamp(34px,5vw,56px);font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--ink-900);max-width:780px}
+.footer .bigtype .em{color:var(--accent)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:48px;padding-top:24px;border-top:1px solid var(--line);flex-wrap:wrap;gap:16px}
+.footer-bottom .tiny{color:var(--ink-400)}
+
+/* ===== Modal / Overlay generic ===== */
+.overlay{position:fixed;inset:0;background:rgba(43,43,43,.32);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:100;padding:24px}
+.overlay.show{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:var(--r-overlay);box-shadow:var(--shadow-md);max-width:560px;width:100%;padding:32px;animation:rise .3s ease}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal h3{font-size:22px;margin-bottom:6px}
+.modal .sub{color:var(--ink-500);font-size:14px;margin-bottom:22px}
+
+/* scene / level cards */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.choice{background:var(--surface-alt);border:2px solid transparent;border-radius:var(--r-card);padding:20px;cursor:pointer;transition:.2s;text-align:left}
+.choice:hover{border-color:var(--line);background:var(--surface)}
+.choice.sel{border-color:var(--accent);background:var(--accent-tint)}
+.choice .ct{font-weight:700;color:var(--ink-900);font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.choice .cd{font-size:13px;color:var(--ink-500)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.seg-opt{background:var(--surface-alt);border:2px solid transparent;border-radius:var(--r-card);padding:14px;cursor:pointer;text-align:center;transition:.2s}
+.seg-opt:hover{background:var(--surface)}
+.seg-opt.sel{border-color:var(--accent)}
+.seg-opt .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+.seg-opt .sn{font-weight:700;color:var(--ink-900);font-size:15px}
+.seg-opt .sd{font-size:12px;color:var(--ink-500);margin-top:4px}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:26px}
+
+/* ===== Training view ===== */
+#training{position:fixed;inset:0;background:var(--paper-bg);z-index:80;display:none;flex-direction:column}
+#training.show{display:flex}
+.train-head{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;background:var(--surface)}
+.train-head .th-scene{font-weight:700;color:var(--ink-900)}
+.train-head .th-chip{font-size:12px;font-weight:600;padding:5px 12px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:6px}
+.train-head .spacer{flex:1}
+.train-body{flex:1;display:grid;grid-template-columns:1fr 340px;min-height:0}
+.chat-col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+.chat-scroll{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:10px;align-items:flex-end;max-width:84%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg .av{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
+.msg .av.int{background:var(--ink-700)}
+.msg .av.usr{background:var(--accent)}
+.bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.bubble.int{background:var(--surface);border:1px solid var(--line);color:var(--ink-700);border-bottom-left-radius:4px}
+.bubble.usr{background:var(--accent-tint);color:var(--ink-900);border-bottom-right-radius:4px}
+.typing{display:inline-flex;gap:4px;padding:4px 2px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-400);animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+.input-bar{border-top:1px solid var(--line);background:var(--surface);padding:14px 20px;display:flex;gap:12px;align-items:flex-end}
+.input-bar textarea{flex:1;resize:none;border:1px solid var(--line);background:var(--surface-alt);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;color:var(--ink-700);max-height:140px;outline:none;transition:.2s}
+.input-bar textarea:focus{border-color:var(--accent);background:var(--surface)}
+.guard{display:flex;gap:8px}
+.guard button{flex:1;padding:10px 8px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-500);font-size:13px;font-weight:600;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.guard button:hover{border-color:var(--ink-500);color:var(--ink-900)}
+.guard button.end:hover{border-color:var(--metric-bad);color:var(--metric-bad)}
+
+/* coach sidebar */
+.coach-col{background:var(--surface-alt);display:flex;flex-direction:column;min-height:0}
+.coach-head{padding:18px 18px 12px;border-bottom:1px solid var(--line)}
+.coach-head .ch-t{font-weight:700;color:var(--ink-900);font-size:15px;display:flex;align-items:center;gap:8px}
+.coach-scroll{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.metric{border-radius:12px;background:var(--surface);border:1px solid var(--line);padding:12px 14px}
+.metric .mt{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink-500);margin-bottom:6px}
+.metric .mv{font-weight:700;color:var(--ink-900);font-size:15px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.advice{border-radius:12px;background:var(--surface);border:1px solid var(--line);padding:14px}
+.advice .at{font-weight:700;color:var(--accent-700);font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.advice ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px}
+.advice li{font-size:14px;color:var(--ink-700);line-height:1.5}
+.coach-foot{padding:12px 18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-400);display:flex;align-items:center;gap:6px}
+
+/* report */
+.report-grid{display:flex;flex-direction:column;gap:16px}
+.dim{display:flex;align-items:center;gap:14px}
+.dim .dl{width:96px;font-size:14px;color:var(--ink-700);font-weight:600;flex:none}
+.bar{flex:1;height:10px;border-radius:var(--r-pill);background:var(--surface-alt);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:var(--r-pill);background:var(--accent);width:0;transition:width .8s ease}
+.report-stats{background:var(--surface-alt);border-radius:12px;padding:16px;font-size:14px;color:var(--ink-700);line-height:1.9}
+.report-advice{background:var(--surface-alt);border-radius:12px;padding:16px;font-size:14px;color:var(--ink-700)}
+.report-advice li{margin:6px 0 6px 18px}
+
+/* pause overlay */
+.pause-card{text-align:center;max-width:420px}
+.breath{width:120px;height:120px;border-radius:50%;background:var(--accent-tint);margin:8px auto 24px;display:grid;place-items:center;position:relative}
+.breath::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.85);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+.breath .b-ic{color:var(--accent);position:relative}
+.pause-card h3{font-size:22px;margin-bottom:8px}
+.pause-card p{color:var(--ink-500);margin-bottom:22px}
+
+/* help drawer */
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(440px,92vw);background:var(--surface);box-shadow:var(--shadow-md);z-index:110;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column}
+.drawer.show{transform:translateX(0)}
+.drawer-head{padding:22px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.drawer-body{padding:24px;overflow-y:auto;flex:1}
+.help-block{margin-bottom:22px}
+.help-block h4{font-size:15px;margin-bottom:8px;color:var(--ink-900)}
+.help-block p{font-size:14px;color:var(--ink-500);line-height:1.6}
+.help-block .privacy{display:flex;align-items:center;gap:8px;color:var(--accent-700);font-size:13px;font-weight:600;background:var(--accent-tint);padding:10px 12px;border-radius:10px}
+
+/* toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink-900);color:#fff;padding:12px 20px;border-radius:var(--r-pill);font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* rebound popup */
+.rebound .modal{max-width:460px;border:1px solid var(--accent-tint)}
+
+/* responsive */
+@media(max-width:1023px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .hero-visual{order:-1}
+  .trust-grid{grid-template-columns:repeat(2,1fr);gap:20px}
+  .cards{grid-template-columns:1fr}
+  .train-body{grid-template-columns:1fr}
+  .coach-col{position:fixed;right:0;top:58px;bottom:0;width:min(360px,90vw);transform:translateX(100%);transition:transform .3s;z-index:90;box-shadow:var(--shadow-md)}
+  .coach-col.open{transform:translateX(0)}
+  .mobile-coach-toggle{display:flex!important}
+}
+@media(max-width:767px){
+  .container{padding:0 16px}
+  .nav .anchor{display:none}
+  .hero{padding:56px 0 40px}
+  .section{padding:56px 0}
+  .choice-grid{grid-template-columns:1fr}
+  .seg{grid-template-columns:1fr}
+  .trust-grid{grid-template-columns:1fr 1fr}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+}
+.mobile-coach-toggle{display:none;position:fixed;right:16px;bottom:88px;z-index:95;background:var(--accent);color:#fff;border-radius:var(--r-pill);padding:12px 18px;font-weight:600;box-shadow:var(--shadow-md);align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="container">
+    <div class="logo"><span class="mark">M</span> MindForge 心智锻造</div>
+    <span class="anchor">训练工具 · 非招聘决策</span>
+    <span class="spacer"></span>
+    <div class="nav-actions">
+      <button class="icon-btn" id="navHelp" title="帮助中心" aria-label="帮助">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+      </button>
+      <button class="btn btn-primary" id="navStart" style="padding:9px 20px;font-size:14px">开始训练</button>
+    </div>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<div id="landing">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="badge">⚡ 高压心理脱敏 × 表达力即时教练</span>
+        <h1>把临场表达，<br>练成<span class="em">肌肉记忆</span>。</h1>
+        <p class="lead">MindForge 是面向求职与考研复试的高压训练场。在可控的施压中，把紧张练成从容——我们不评判你，我们只赋能你。</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" id="heroStart">开始训练</button>
+          <button class="btn btn-ghost" id="heroHow">了解机制</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="float-card" id="parallaxCard">
+          <div class="chat-mini">
+            <div class="cm-row"><div class="cm-avatar int">面</div><div class="cm-bubble int">请谈谈你简历上最大的挑战。</div></div>
+            <div class="cm-row user"><div class="cm-avatar usr">你</div><div class="cm-bubble usr">然后……嗯……我觉得就是说……</div></div>
+            <div class="cm-row"><div class="cm-avatar int">面</div><div class="cm-bubble int">所以，挑战具体指什么？先亮观点。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="trust">
+    <div class="container trust-grid">
+      <div class="trust-item"><div class="num">1270万</div><div class="lbl">2026 届毕业生规模</div></div>
+      <div class="trust-item"><div class="num">388万</div><div class="lbl">2025 考研报名人数</div></div>
+      <div class="trust-item"><div class="num">98:1</div><div class="lbl">2026 国考报录比</div></div>
+      <div class="trust-item"><div class="num">700+</div><div class="lbl">春招启用 AI 面试官企业</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Core Capabilities</div>
+        <h2>三段式训练，把焦虑变成掌控感</h2>
+        <p>选择场景、调节施压强度，在真实对话里打磨表达力，结束后拿到结构化成长报告。</p>
+      </div>
+      <div class="cards">
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></div><h3>可调施压模拟</h3><p>温和 / 标准 / 高压三档，把"面试官施压"作为可调节的训练模块，绝不人身攻击。</p></div>
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>表达力即时教练</h3><p>每轮作答后给出填充词、逻辑、情绪三类建议，前端正则统计零推理成本。</p></div>
+        <div class="feature"><div class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg></div><h3>结构化成长报告</h3><p>语言组织 / 逻辑清晰 / 情绪稳定 / 改进建议四维评分，附本地客观统计，可导出。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER BIG TYPE -->
+  <footer class="footer">
+    <div class="container">
+      <div class="bigtype">你不需要更聪明，<br>你只需要<span class="em">更从容</span>地表达。</div>
+      <div class="footer-bottom">
+        <div class="tiny">© 2026 MindForge 心智锻造 · 训练工具，非招聘决策</div>
+        <button class="btn btn-primary" id="footerStart" style="padding:11px 22px;font-size:14px">免费开始训练</button>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- TRAINING VIEW -->
+<div id="training">
+  <div class="train-head">
+    <button class="icon-btn" id="trainBack" title="返回首页"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="th-scene" id="thScene">校招面试</span>
+    <span class="th-chip" id="thLevel"><span class="dot" style="background:var(--lvl-std)"></span>标准</span>
+    <span class="spacer"></span>
+    <button class="btn btn-text" id="trainHelp" style="font-size:14px">帮助</button>
+  </div>
+  <div class="train-body">
+    <div class="chat-col">
+      <div class="chat-scroll" id="chatScroll"></div>
+      <div class="input-bar">
+        <textarea id="userInput" rows="1" placeholder="在这里作答……（Enter 发送，Shift+Enter 换行）"></textarea>
+        <div class="guard">
+          <button id="gPause"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>暂停</button>
+          <button id="gDown"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>降级</button>
+          <button class="end" id="gEnd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>结束</button>
+        </div>
+      </div>
+    </div>
+    <div class="coach-col" id="coachCol">
+      <div class="coach-head"><div class="ch-t"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/></svg> 教练 · 实时反馈</div></div>
+      <div class="coach-scroll" id="coachScroll">
+        <div class="metric"><div class="mt"><span>填充词频次</span><span class="dot" style="background:var(--metric-good)"></span></div><div class="mv" id="mFiller">0 次/千字</div></div>
+        <div class="metric"><div class="mt"><span>平均句长</span><span class="dot" style="background:var(--metric-good)"></span></div><div class="mv" id="mLen">— 字</div></div>
+        <div class="metric"><div class="mt"><span>停顿 / 语速</span><span class="dot" style="background:var(--metric-good)"></span></div><div class="mv" id="mPace">—</div></div>
+        <div class="advice"><div class="at"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c.7.7 1 1.5 1 2h6c0-.5.3-1.3 1-2a6 6 0 0 0-4-10z"/></svg>本轮建议</div><ol id="adviceList"><li class="muted">进入模拟后，教练会在这里给出表达力建议。</li></ol></div>
+      </div>
+      <div class="coach-foot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> 训练工具 · 本地处理 · 数据可删除</div>
+    </div>
+  </div>
+</div>
+<button class="mobile-coach-toggle" id="coachToggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/></svg> 教练面板</button>
+
+<!-- SCENE/LEVEL MODAL -->
+<div class="overlay" id="configOverlay">
+  <div class="modal">
+    <h3>开始你的训练</h3>
+    <div class="sub">先选择场景，再调节施压强度。你可以随时暂停、降级或结束。</div>
+    <div style="margin-bottom:22px">
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">① 选择场景</div>
+      <div class="choice-grid" id="sceneGrid">
+        <button class="choice" data-scene="考研复试"><div class="ct">🎓 考研复试</div><div class="cd">临场表达定生死，"上岸"强驱动</div></button>
+        <button class="choice" data-scene="校招面试"><div class="ct">💼 校招面试</div><div class="cd">短期高频，需要真实模拟 + 即时纠错</div></button>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:600;color:var(--ink-900);margin-bottom:10px;font-size:14px">② 选择施压档位</div>
+      <div class="seg" id="levelSeg">
+        <div class="seg-opt" data-level="温和" data-color="var(--lvl-easy)"><span class="dot" style="background:var(--lvl-easy)"></span><div class="sn">温和</div><div class="sd">多鼓励 · 平和</div></div>
+        <div class="seg-opt" data-level="标准" data-color="var(--lvl-std)"><span class="dot" style="background:var(--lvl-std)"></span><div class="sn">标准</div><div class="sd">适度质疑</div></div>
+        <div class="seg-opt" data-level="高压" data-color="var(--lvl-hard)"><span class="dot" style="background:var(--lvl-hard)"></span><div class="sn">高压</div><div class="sd">冷峻追问 · 绝不人身攻击</div></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="configCancel">稍后</button>
+      <button class="btn btn-primary" id="configStart" disabled style="opacity:.5">进入模拟</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:600px">
+    <h3 id="reportTitle">你的成长报告</h3>
+    <div class="sub" id="reportSub">分析师基于本次对话生成</div>
+    <div class="report-grid">
+      <div class="dim"><span class="dl">语言组织</span><div class="bar"><i id="barLang"></i></div></div>
+      <div class="dim"><span class="dl">逻辑清晰度</span><div class="bar"><i id="barLogic"></i></div></div>
+      <div class="dim"><span class="dl">情绪稳定性</span><div class="bar"><i id="barEmo"></i></div></div>
+      <div class="report-stats" id="reportStats"></div>
+      <div class="report-advice"><strong style="color:var(--ink-900)">改进建议</strong><ol id="reportAdvice" style="margin-top:8px"></ol></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="reportAgain">再来一次</button>
+      <button class="btn btn-ghost" id="reportHome">返回首页</button>
+      <button class="btn btn-primary" id="reportExport">导出报告</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAUSE MODAL -->
+<div class="overlay" id="pauseOverlay">
+  <div class="modal pause-card">
+    <div class="breath"><span class="b-ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></span></div>
+    <h3>先深呼吸，准备好了再继续</h3>
+    <p>你随时掌握节奏。跟随圆圈放慢呼吸，不需要证明什么。</p>
+    <button class="btn btn-primary btn-block" id="resumeBtn">恢复训练</button>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL (downgrade / end) -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:420px">
+    <h3 id="cfTitle">确认操作</h3>
+    <div class="sub" id="cfText"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cfCancel">取消</button>
+      <button class="btn btn-primary" id="cfOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- REBOUND POPUP -->
+<div class="overlay rebound" id="reboundOverlay">
+  <div class="modal">
+    <h3>看起来有点紧 🌿</h3>
+    <div class="sub">高压训练本来就会让人不舒服，这很正常。需要降低强度吗？我们随时在这里。</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="rbKeep">继续当前强度</button>
+      <button class="btn btn-primary" id="rbDown">降低强度</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP DRAWER -->
+<div class="drawer" id="helpDrawer">
+  <div class="drawer-head"><h3 style="font-size:18px">帮助中心</h3><button class="icon-btn" id="helpClose"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="drawer-body">
+    <div class="help-block"><h4>我们是什么</h4><p>MindForge 是高压心理脱敏与表达力训练工具，定位为"训练工具、非招聘决策"。我们不为任何机构筛选你，只为帮你 stronger。</p></div>
+    <div class="help-block"><h4>施压机制</h4><p>面试官由 AI 扮演，强度由你选择的档位决定：温和多鼓励、标准适度质疑、高压冷峻追问（但绝不人身攻击或侮辱）。</p></div>
+    <div class="help-block"><h4>安全护栏</h4><p>训练中你可随时「暂停」（呼吸引导）、「降级」（切回温和）、「结束」（生成报告）。若系统检测到你明显焦虑，会主动建议降低强度。</p></div>
+    <div class="help-block"><h4>数据隐私</h4><div class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> 本地优先处理 · 数据可删除</div><p style="margin-top:8px">对话与指标存于本地浏览器，原始音频不上传，报告可本地导出。</p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ State ============ */
+const state={scene:null,level:null,qIndex:0,paused:false,history:[],metrics:{filler:0,len:0,pace:'—',turns:0},streaming:false};
+const LEVEL_COLOR={'温和':'var(--lvl-easy)','标准':'var(--lvl-std)','高压':'var(--lvl-hard)'};
+const QUESTIONS={
+  '考研复试':[
+    '请用两分钟做个自我介绍，重点说清楚你为什么选择这个专业。',
+    '你本科成绩并不突出，你觉得这会影响复试表现吗？',
+    '如果导师问了一个你完全不会的问题，你会怎么应对？',
+    '你未来的研究方向是什么？为什么是它而不是别的？'
+  ],
+  '校招面试':[
+    '请先做一下自我介绍。',
+    '你为什么想加入我们公司？',
+    '你最大的缺点是什么？准备怎么改进？',
+    '如果同事和你在方案上激烈冲突，你会怎么处理？'
+  ]
+};
+const FOLLOWUPS=['能展开说说吗，给我一个具体例子。','你刚才说的，核心结论是什么？','为什么是这个结果，而不是别的？','换个角度，你怎么证明这一点？'];
+const FILLER_RE=/(嗯|啊|呃|然后|就是说|那个|可能吧|其实呢|就是说|对吧|是吧|怎么说呢|这个的话)/g;
+const NERVE_RE=/(紧张|怕|不会|不行|不确定|没信心|焦虑|慌|垮|崩)/;
+const REBOUND_RE=/(我不行了|想退出|受不了|崩溃|撑不住|放弃|太难了|想哭|不想继续)/;
+
+/* ============ Helpers ============ */
+const $=s=>document.querySelector(s);
+const chatScroll=$('#chatScroll');
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function addMsg(role,text,stream){return new Promise(res=>{
+  const wrap=document.createElement('div');wrap.className='msg '+(role==='user'?'user':'');
+  const av=document.createElement('div');av.className='av '+(role==='user'?'usr':'int');av.textContent=role==='user'?'你':'面';
+  const b=document.createElement('div');b.className='bubble '+(role==='user'?'usr':'int');
+  wrap.appendChild(av);wrap.appendChild(b);chatScroll.appendChild(wrap);chatScroll.scrollTop=chatScroll.scrollHeight;
+  if(!stream){b.textContent=text;res(wrap);return;}
+  state.streaming=true;
+  const ind=document.createElement('span');ind.className='typing';ind.innerHTML='<span></span><span></span><span></span>';b.appendChild(ind);
+  let i=0;const speed=18;
+  const tick=()=>{
+    if(state.paused){return;}
+    if(i<text.length){ind.remove();b.textContent=text.slice(0,i+1);i++;chatScroll.scrollTop=chatScroll.scrollHeight;setTimeout(tick,speed);}
+    else{ind.remove();b.textContent=text;state.streaming=false;res(wrap);}
+  };
+  setTimeout(tick,speed);
+});}
+function levelOpener(){
+  if(state.level==='高压'){const o=['你这个回答不够有力。','沉默了几秒，我等你。','我再追问一次。','注意，我只看结论。'];return o[Math.floor(Math.random()*o.length)]+' ';}
+  if(state.level==='温和'){return Math.random()<0.5?'好的，我们慢慢来。':'别紧张，继续。';}
+  return '';
+}
+
+/* ============ Metrics ============ */
+function analyze(text){
+  const fillers=(text.match(FILLER_RE)||[]).length;
+  const chars=text.replace(/\s/g,'').length;
+  const fillerPerK=chars?Math.round(fillers/chars*1000):0;
+  const sents=text.split(/[。！？.?!]/).filter(s=>s.trim().length>0);
+  const avgLen=sents.length?Math.round(chars/sents.length):0;
+  let pace='适中',paceColor='var(--metric-good)';
+  if(avgLen>42){pace='偏长';paceColor='var(--metric-warn)';}else if(avgLen<10&&chars>0){pace='偏碎';paceColor='var(--metric-warn)';}
+  // color for filler
+  let fColor='var(--metric-good)';if(fillerPerK>30)fColor='var(--metric-bad)';else if(fillerPerK>15)fColor='var(--metric-warn)';
+  let lColor='var(--metric-good)';if(avgLen>42||avgLen<10)lColor='var(--metric-warn)';
+  state.metrics={filler:fillerPerK,len:avgLen,pace,paceColor,fColor,lColor,turns:state.metrics.turns+1,nerves:NERVE_RE.test(text)};
+  $('#mFiller').textContent=fillerPerK+' 次/千字';$('#mFiller').previousElementSibling.querySelector('.dot').style.background=fColor;
+  $('#mLen').textContent=avgLen+' 字';$('#mLen').previousElementSibling.querySelector('.dot').style.background=lColor;
+  $('#mPace').textContent=pace;$('#mPace').previousElementSibling.querySelector('.dot').style.background=paceColor;
+}
+function coachAdvice(text){
+  const list=$('#adviceList');list.innerHTML='';const tips=[];
+  const fillers=(text.match(FILLER_RE)||[]).length;
+  if(fillers>=2)tips.push('填充词（嗯/然后/就是说）偏多，先亮观点再展开细节。');
+  if(!/(第一|首先|一方面|其次|最后|我认)/.test(text)&&text.length>30)tips.push('建议分点作答（第一/其次），逻辑结构更清晰。');
+  if(NERVE_RE.test(text))tips.push('注意到你有些紧张，放慢语速、句间留 2 秒停顿会更稳。');
+  if(tips.length===0)tips.push('表达流畅、结构清晰，保持这个节奏。');
+  tips.slice(0,3).forEach(t=>{const li=document.createElement('li');li.textContent=t;list.appendChild(li);});
+}
+
+/* ============ Interviewer turn ============ */
+function nextInterviewerLine(){
+  const qs=QUESTIONS[state.scene];
+  let line;
+  if(state.qIndex<qs.length){line=qs[state.qIndex++];}
+  else{line=FOLLOWUPS[Math.floor(Math.random()*FOLLOWUPS.length)];}
+  return levelOpener()+line;
+}
+
+/* ============ Flow ============ */
+async function interviewerSpeak(){
+  const line=nextInterviewerLine();
+  await addMsg('int',line,true);
+}
+async function sendUser(){
+  if(state.streaming||state.paused)return;
+  const ta=$('#userInput');const text=ta.value.trim();
+  if(!text){toast('请输入内容后提交');ta.focus();return;}
+  ta.value='';ta.style.height='auto';
+  await addMsg('user',text,false);
+  analyze(text);coachAdvice(text);
+  state.history.push({role:'user',text});
+  // rebound detection
+  if(state.level==='高压'&&REBOUND_RE.test(text)){showRebound();return;}
+  await interviewerSpeak();
+  state.history.push({role:'int',text:QUESTIONS[state.scene][Math.min(state.qIndex-1,QUESTIONS[state.scene].length-1)]||''});
+}
+
+/* ============ Report ============ */
+function genReport(){
+  const m=state.metrics;
+  const lang=Math.max(20,100-m.filler*1.4);
+  const logic=m.len>12&&m.len<40?82:60;
+  const emo=m.nerves?55:88;
+  $('#barLang').style.width=lang+'%';$('#barLogic').style.width=logic+'%';$('#barEmo').style.width=emo+'%';
+  $('#reportTitle').textContent='你的成长报告 · '+state.scene+' · '+state.level+'档';
+  $('#reportStats').innerHTML='客观佐证（本地统计）：<br>填充词 '+m.filler+' 次/千字 · 平均句长 '+m.len+' 字 · 停顿/语速 '+m.pace+' · 完成轮次 '+m.turns;
+  const adv=[];
+  if(m.filler>15)adv.push('压缩填充词：用停顿代替"嗯/然后"，先说结论。');
+  if(m.len>40)adv.push('控制句长：一句话讲一个点，避免信息过载。');
+  if(m.nerves)adv.push('稳定情绪：入场前做 3 次深呼吸，把焦虑当成正常信号。');
+  if(adv.length===0)adv.push('整体表达稳健，建议增加专业术语与量化成果。');
+  const ol=$('#reportAdvice');ol.innerHTML='';adv.forEach(a=>{const li=document.createElement('li');li.textContent=a;ol.appendChild(li);});
+  $('#reportOverlay').classList.add('show');
+}
+function exportReport(){
+  const m=state.metrics;
+  const txt=`MindForge 成长报告\n场景：${state.scene}　档位：${state.level}\n\n【四维评分】\n语言组织：${Math.round(Math.max(20,100-m.filler*1.4))}/100\n逻辑清晰度：${m.len>12&&m.len<40?82:60}/100\n情绪稳定性：${m.nerves?55:88}/100\n\n【客观佐证（本地统计）】\n填充词：${m.filler} 次/千字\n平均句长：${m.len} 字\n停顿/语速：${m.pace}\n完成轮次：${m.turns}\n\n数据本地生成，未上传。\n`;
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MindForge_成长报告.txt';a.click();toast('报告已导出');
+}
+
+/* ============ Guardrails ============ */
+function showPause(){state.paused=true;$('#pauseOverlay').classList.add('show');}
+function hidePause(){state.paused=false;$('#pauseOverlay').classList.remove('show');if(state.streaming){/* resume handled by tick loop */}}
+function confirmDown(){showConfirm('降低强度？','将施压档位切回「温和」并注入放缓指令，随时可再调高。',()=>{
+  state.level='温和';updateLevelChip();toast('强度已降低为温和');
+  addMsg('int','好的，我们放慢一点，你按自己的节奏来。',true);
+});}
+function confirmEnd(){showConfirm('结束并生成报告？','结束后将触发分析师生成成长报告，会话归档。',()=>{genReport();});}
+function showRebound(){
+  $('#reboundOverlay').classList.add('show');
+  state.paused=true;
+}
+
+/* ============ UI wiring ============ */
+function showConfig(){if(!state.scene&&!state.level){} $('#configOverlay').classList.add('show');}
+function startTraining(){
+  $('#configOverlay').classList.remove('show');
+  $('#landing').style.display='none';
+  $('#training').classList.add('show');
+  $('#thScene').textContent=state.scene;$('#thLevel').innerHTML='<span class="dot" style="background:'+LEVEL_COLOR[state.level]+'"></span>'+state.level;
+  chatScroll.innerHTML='';
+  addMsg('int','欢迎来到你的高压训练场。场景：'+state.scene+'，档位：'+state.level+'。我会连续追问，准备好了就作答。',true).then(()=>interviewerSpeak());
+}
+function updateLevelChip(){$('#thLevel').innerHTML='<span class="dot" style="background:'+LEVEL_COLOR[state.level]+'"></span>'+state.level;}
+function showConfirm(title,text,ok){$('#cfTitle').textContent=title;$('#cfText').textContent=text;$('#confirmOverlay').classList.add('show');$('#cfOk').onclick=()=>{$('#confirmOverlay').classList.remove('show');ok();};}
+function backHome(){$('#training').classList.remove('show');$('#landing').style.display='block';}
+
+/* scene/level selection */
+let selScene=null,selLevel=null;
+document.querySelectorAll('#sceneGrid .choice').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#sceneGrid .choice').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');selScene=c.dataset.scene;checkConfig();
+});
+document.querySelectorAll('#levelSeg .seg-opt').forEach(o=>o.onclick=()=>{
+  document.querySelectorAll('#levelSeg .seg-opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');selLevel=o.dataset.level;checkConfig();
+});
+function checkConfig(){const b=$('#configStart');if(selScene&&selLevel){b.disabled=false;b.style.opacity='1';}else{b.disabled=true;b.style.opacity='.5';}}
+$('#configStart').onclick=()=>{state.scene=selScene;state.level=selLevel;startTraining();};
+$('#configCancel').onclick=()=>$('#configOverlay').classList.remove('show');
+
+/* start buttons */
+['#navStart','#heroStart','#footerStart'].forEach(s=>$(s).onclick=showConfig);
+$('#heroHow').onclick=()=>{document.querySelector('.section').scrollIntoView();};
+
+/* input */
+const ta=$('#userInput');
+ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,140)+'px';});
+ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendUser();}});
+
+/* guardrails */
+$('#gPause').onclick=showPause;$('#resumeBtn').onclick=hidePause;
+$('#gDown').onclick=confirmDown;$('#gEnd').onclick=confirmEnd;
+$('#trainBack').onclick=backHome;
+$('#rbDown').onclick=()=>{$('#reboundOverlay').classList.remove('show');state.paused=false;state.level='温和';updateLevelChip();toast('已降低强度');addMsg('int','没关系，我们回到温和节奏，慢慢来。',true);};
+$('#rbKeep').onclick=()=>{$('#reboundOverlay').classList.remove('show');state.paused=false;toast('继续当前强度');};
+
+/* report */
+$('#reportAgain').onclick=()=>{$('#reportOverlay').classList.remove('show');backHome();showConfig();};
+$('#reportHome').onclick=()=>{$('#reportOverlay').classList.remove('show');backHome();};
+$('#reportExport').onclick=exportReport;
+
+/* help */
+function openHelp(){$('#helpDrawer').classList.add('show');}
+function closeHelp(){$('#helpDrawer').classList.remove('show');}
+$('#navHelp').onclick=openHelp;$('#trainHelp').onclick=openHelp;$('#helpClose').onclick=closeHelp;
+
+/* mobile coach toggle */
+$('#coachToggle').onclick=()=>$('#coachCol').classList.toggle('open');
+
+/* parallax */
+window.addEventListener('scroll',()=>{const c=$('#parallaxCard');if(c&&window.scrollY<600){c.style.transform='translateY('+(window.scrollY*0.06)+'px)';}});
+
+/* confirm cancel */
+$('#cfCancel').onclick=()=>$('#confirmOverlay').classList.remove('show');
+
+console.log('[MindForge] prototype v2.0 light ready');
+</script>
+</body>
+</html>

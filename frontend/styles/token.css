@@ -1,0 +1,41 @@
+/* ============================================================
+   MindForge 设计 Token（UI/UX v2.0 浅色 · 单一真相源）
+   严禁纯黑 #000000 作主色/大面积底色；最深墨色止于 #2B2B2B
+   ============================================================ */
+:root {
+  /* 基础色板 */
+  --paper-bg: #F7F5F2;     /* 页面主导视觉（暖白） */
+  --surface: #FFFFFF;      /* 卡片/浮层/输入框底 */
+  --surface-alt: #F1EFEC;  /* 分区底/弱浮层/hover */
+  --ink-900: #2B2B2B;      /* 标题/主文字（非黑） */
+  --ink-700: #33312E;      /* 正文/气泡文字 */
+  --ink-500: #6F6A62;      /* 辅助说明/未选中 */
+  --ink-400: #9A958D;      /* 占位符/三级提示 */
+  --line: #E8E5E1;         /* 1px 边框/分割线 */
+
+  /* 唯一强调色（深青绿，面积 ≤10%） */
+  --accent: #1F4E4A;
+  --accent-700: #163831;
+  --accent-tint: #E4ECEA;
+
+  /* 语义色（小面积指示，均配文字/图标双通道） */
+  --lvl-easy: #6B8E6B;     /* 温和 */
+  --lvl-std: #6B7C8E;      /* 标准 */
+  --lvl-hard: #B08A4E;     /* 高压 */
+  --metric-good: #5C8A5C;  /* 绿 */
+  --metric-warn: #C2A24B;  /* 黄 */
+  --metric-bad: #B06B5C;   /* 红（仅提示不恐慌） */
+
+  /* 阴影 / 圆角 */
+  --shadow: 0 2px 8px rgba(0, 0, 0, .04);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, .06);
+  --r-pill: 999px;
+  --r-card: 12px;
+  --r-overlay: 16px;
+
+  /* 字体 */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  /* 间距节奏（8 倍数） */
+  --sp-1: 8px; --sp-2: 16px; --sp-3: 24px; --sp-4: 32px; --sp-6: 48px; --sp-8: 64px;
+}

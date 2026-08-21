@@ -1,0 +1,9 @@
+# 行尾统一规则（防止 git 自动转换破坏脚本）
+* text=auto
+
+# start.bat 必须保持 CRLF：中文 Windows cmd 依赖 GBK+CRLF，转成 LF 会导致括号块解析失败（窗口闪退）
+start.bat text eol=crlf
+*.bat text eol=crlf
+
+# shell 启动脚本保持 LF（macOS/Linux 需要）
+*.sh text eol=lf

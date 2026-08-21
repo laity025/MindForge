@@ -1,0 +1,24 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- 环境变量（含密钥，禁止提交）----
+.env
+!.env.example
+
+# ---- Node / 前端 ----
+node_modules/
+dist/
+
+# ---- 项目本地数据与临时文件 ----
+.workbuddy/
+*.tmp
+.mfcheck_tmp/
+tests/e2e/_*.png
+tests/e2e/smoke_*.cjs
+
+# ---- 系统文件 ----
+Thumbs.db
+.DS_Store
