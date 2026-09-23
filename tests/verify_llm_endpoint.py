@@ -48,7 +48,11 @@ except ImportError:
 
 BASE = os.environ.get("LLM_BASE_URL", "https://api-inference.modelscope.cn/v1")
 FAST_MODEL = os.environ.get("FAST_MODEL", "deepseek-ai/DeepSeek-V4.1-Flash")
-STRONG_MODEL = os.environ.get("STRONG_MODEL", "deepseek-ai/DeepSeek-V4-Pro")
+# Both roles default to Flash on purpose: a real report-shaped call (no max_tokens)
+# showed that 5 of 9 candidates on 2026-09-23 either returned "choices: null" or
+# http 400 "has no provider supported". The /v1/models list is a capability list,
+# not an availability guarantee. Re-run tests/verify_strong_model.py to re-pick.
+STRONG_MODEL = os.environ.get("STRONG_MODEL", "deepseek-ai/DeepSeek-V4.1-Flash")
 TOKEN = os.environ.get("MS_TOKEN", "").strip()
 
 if not TOKEN:

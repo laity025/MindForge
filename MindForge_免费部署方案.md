@@ -169,7 +169,7 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | `backend/requirements-deploy.txt` | 生产依赖（移除 faster-whisper，显式补上 numpy 与 python-multipart） |
 | `render.yaml` | Render 蓝图：一键部署 + 环境变量声明（Key 不入库） |
 | `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方 `environment_variables` 字段预置了 8 个非敏感环境变量（字段已逐项对官方 schema 核对） |
-| `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及**按应用真实载荷（不传 max_tokens）调用强模型出报告**，共 6 项（用法见第七节「拿到令牌先验证一次」） |
+| `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及**按应用真实载荷（不传 max_tokens）调用强模型出报告**，共 **7 项**断言（用法见第七节「拿到令牌先验证一次」） |
 | `tests/verify_strong_model.py` | **强模型候选对比脚本**：把同一份"报告请求"发给多个候选模型，只保留能返回完整 JSON 的那些，并给出推荐值。遇到异常响应会**打印原始响应体**（例如 `choices is null`），不再只是一个看不懂的报错 |
 | `dist/MindForge_studio.zip` | **给创空间用的干净包（约 44 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
 | `MindForge_免费部署方案.md` | 本文档 |
@@ -214,20 +214,36 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 
 > ⚠️ **两个角色暂用同一个模型，原因是一条实测结论**：原计划按《技术方案_AI技术选型》的「Flash 主力 + Pro 出报告」把 `STRONG_MODEL` 设为 `deepseek-ai/DeepSeek-V4-Pro`，但实测该模型**返回 HTTP 200 却没有可用内容**（`choices` 为 `null` / 内容为空，`finish_reason=length`）。两个 DeepSeek 模型都会返回 `reasoning_content`（即**推理型模型**），而 `llm_client.chat_json` **不传 `max_tokens`**，输出预算走平台默认值 —— Pro 把预算全花在推理上，结果一个字的正文都没输出。
 >
-> **后果不是报错，而是 `report_service` 静默退回本地模板报告**：功能正常、内容退化，不查根本发现不了。因此改用**已验证能正常输出正文**的 Flash。若你想要更好的报告质量，先跑 `tests/verify_strong_model.py` 挑一个真正能出完整 JSON 的模型再换。
+> **后果不是报错，而是 `report_service` 静默退回本地模板报告**：功能正常、内容退化，不查根本发现不了。因此改用**已验证能正常输出正文**的 Flash。**若想要更好的报告质量**：下表里 `stepfun-ai/Step-3.7-Flash` 的输出量是 Flash 的 2.5 倍，可换它（换完重跑一次预检即可）。
 
-**备选（同期清单内的其他 ID，主选不可用时替换 —— 换完请跑一次预检确认能出内容）**：
+**可用备选（2026-09-23 用真实报告载荷实测过，只列出真的能出内容的 4 个）**：
 
-| 档位 | 候选 ID |
+| 模型 ID | 报告调用耗时 | 输出 token | 说明 |
+|---|---|---|---|
+| `deepseek-ai/DeepSeek-V4.1-Flash` ⭐ | 7.6s | 472 | **当前推荐**：最快、已验证、且与 `FAST_MODEL` 一致（少一个变量） |
+| `stepfun-ai/Step-3.7-Flash` | 9.2s | **1200** | 输出最长，约为 Flash 的 2.5 倍 —— 想要更详尽的报告可换它 |
+| `Qwen/Qwen3.8-Flash-Next` | 9.6s | 540 | 可用，耗时与输出居中 |
+| `mistralai/Mistral-Large-Instruct-2407` | 11.1s | 150 | 可用，且是唯一非推理型；但输出明显偏短 |
+
+**实测不可用（同期 9 个候选中淘汰的 5 个，不用再浪费时间试）**：
+
+| 模型 ID | 失败表现 |
 |---|---|
-| 快 | `Qwen/Qwen3.8-Flash-Next`、`ZhipuAI/GLM-4.7-Flash`、`stepfun-ai/Step-3.7-Flash`、`deepseek-ai/DeepSeek-V4-Flash-0731` |
-| 强 | `Qwen/Qwen3.5-397B-A17B`、`ZhipuAI/GLM-5.2`、`MiniMax/MiniMax-M3`、`mistralai/Mistral-Large-Instruct-2407` |
+| `deepseek-ai/DeepSeek-V4-Pro` | `choices` 为 `null`，零输出（HTTP 200） |
+| `deepseek-ai/DeepSeek-V4-Flash-0731` | 同上 |
+| `ZhipuAI/GLM-4.7-Flash` | 同上；补 `max_tokens=900` 重试 → **900 token 全被推理吃掉**，正文仍为空 |
+| `meituan-longcat/LongCat-Flash-Lite` | 同上 |
+| `MiniMax/MiniMax-M3` | `http 400 Model id ... has no provider supported` |
 
-> ✅ **2026-09-23 已实测闭环**：用部署将用的那条令牌**实际调用 `deepseek-ai/DeepSeek-V4.1-Flash` 成功返回了 `choices` 与 `usage`**（含流式 SSE）。令牌与模型可用性两项均已验证。
->
-> ❌ **同时实测排除**：`deepseek-ai/DeepSeek-V4-Pro` 无法产出报告正文（见上）；`deepseek-ai/DeepSeek-V3`、`DeepSeek-R1-0528`、`Qwen/Qwen3-32B` 已不在清单内，网上教程里的这些 ID 一律不要照抄。
+> 🔴 **本次最有价值的一条结论：模型出现在 `/v1/models` 清单里，不等于真的能调用。** 9 个候选里 **5 个失败**，且失败方式分两类 —— 4 个返回 `choices: null`（**HTTP 200 但零输出，完全不报错**），1 个直接 400 说没有可用供应商。所以**照清单抄 ID 是不可靠的，必须用真实载荷测一次**（`tests/verify_strong_model.py` 就是干这个的）。
 
-> 清单同期共 35 个模型（另有 ERNIE、Intern、Mistral、LongCat、Nex、Step 等系列）。**接口不标注每个模型的免费/付费状态**，若某 ID 返回 403/429，换同档位备选即可，代码不用动。
+> ✅ **2026-09-23 已实测闭环**：令牌（`ms-` 写权限）、两个模型 ID、非流式、**流式 SSE**、JSON 解析、报告载荷 —— 全部验证通过。用部署将用的那条令牌实际调用 `deepseek-ai/DeepSeek-V4.1-Flash` 成功返回 `choices` 与 `usage`。
+
+> ✅ **面试官的回答不会被截断**（2026-09-23 实测）：不传 `max_tokens` 的流式调用返回 `finish_reason=stop`、完整句子，**后端代码无需任何改动**。此前看到的"说到一半被切断"，是旧版预检脚本硬传了 `max_tokens=60` 造成的假象 —— 应用实际不传该参数。
+
+> ❌ **网上教程里的旧 ID 一律不要照抄**：`deepseek-ai/DeepSeek-V3`、`DeepSeek-R1-0528`、`Qwen/Qwen3-32B` 都已不在清单内。
+
+> 清单同期共 35 个模型（另有 ERNIE、Intern、LongCat、Nex 等系列）。**接口不标注每个模型的免费/付费状态**，若某 ID 返回 403/429，换上面已验证的备选即可，代码不用动。
 
 > 另外，项目无 Key 会自动回退本地 Mock 生成器。**演示兜底方案：不配 Key 也能完整走通全流程**，只是回答内容为预置模板。
 
@@ -405,7 +421,7 @@ git push origin main
 
 **在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。
 
-**推荐做法（方式一）：跑一遍完整预检脚本。** 项目里已备好 `tests/verify_llm_endpoint.py`，检测 **6 项**并给出耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及第 6 项**「按应用真实载荷调用」**。PowerShell 里执行：
+**推荐做法（方式一）：跑一遍完整预检脚本。** 项目里已备好 `tests/verify_llm_endpoint.py`，**共 7 项断言**并给出耗时 —— 模型清单（两个 ID 各一项）、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及 **[6] 按应用真实载荷调用**（报告场景，不传 `max_tokens`）。PowerShell 里执行：
 
 ```powershell
 $env:MS_TOKEN = "ms-你的令牌"
@@ -422,6 +438,8 @@ $env:MS_TOKEN = "ms-你的令牌"
 > - 报告必须**有内容且键齐全**（`scores` / `improvements` / `summary`），否则线上会静默降级
 
 #### 如果第 6 项失败：跑候选模型对比
+
+> 📌 **本项目的候选对比已于 2026-09-23 跑完，结论直接采纳、无需重跑**：9 个候选中只有 4 个能产出报告 JSON，`STRONG_MODEL` 已按结果设为 `deepseek-ai/DeepSeek-V4.1-Flash`（完整结果表见第四节）。**除非你想调报告质量**（`stepfun-ai/Step-3.7-Flash` 输出量是它的 2.5 倍），否则这一步可以跳过。
 
 报告出不来，换模型就能解决 —— 但要用实测挑，不要靠猜。项目里已备好 `tests/verify_strong_model.py`：
 
