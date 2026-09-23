@@ -190,7 +190,7 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 
 获取步骤：
 1. `modelscope.cn` 注册 → 绑定阿里云账号 → 完成实名
-2. 个人中心 → 访问令牌 → 创建令牌 → **勾选「大模型推理」权限**
+2. 个人中心 → 访问令牌 → 新建 → **选「写权限令牌」（Write Permission）**（选错类型的后果与验证方法见第七节「访问令牌该选哪种？」）
 3. 把令牌填到部署平台的环境变量 `LLM_API_KEY`
 
 > 另外，项目无 Key 会自动回退本地 Mock 生成器。**演示兜底方案：不配 Key 也能完整走通全流程**，只是回答内容为预置模板。
@@ -335,7 +335,42 @@ git push origin main
 
 1. 打开 `modelscope.cn`，用**阿里云账号**登录（没有就注册一个，不收费、**不需要信用卡**）
 2. 完成**实名认证**（个人认证，准备身份证；通常 1–2 个工作日）
-3. 顺手去「账号设置 → 访问令牌」创建一个 Token，**勾选「大模型推理」权限**，后面 `LLM_API_KEY` 要用
+3. 获取**访问令牌**（即 `LLM_API_KEY`）—— 这一步最容易选错，见下方「访问令牌该选哪种？」
+
+#### 访问令牌该选哪种？
+
+入口：`modelscope.cn` →「设置」→「访问令牌」（直达 `https://www.modelscope.cn/my/access/token`）。
+
+点「新建访问令牌」后会要求选令牌**类型**，四种分别是：
+
+| 选项 | 能不能用来调推理 API |
+|---|---|
+| **写权限令牌（Write Permission）** | ✅ **选这个** —— 调用 API-Inference 推理服务需要写权限 |
+| 仅读权限令牌（Read Permission） | ❌ 只够下载模型 / 读数据集，调推理会返回 401 |
+| 细粒度令牌（Fine-grained） | ⚠️ 可以，但要自己勾对推理相关权限；勾漏了同样 401，事后排查更麻烦 |
+| 管理员权限令牌（Admin） | ⚠️ 能用，但权限过大（能删仓库、改账号设置），没必要，泄露风险最高 |
+
+> **最省事的做法**：魔搭账号通常自带一条名为 `default`、标注「长期有效」的令牌。**若它就是 Write Permission，直接点复制按钮用即可**，不必新建。
+>
+> ⚠️ **令牌只在创建那一刻完整显示一次**（之后列表里都是打码的 `ms-****`），务必当场复制保存。它等同密码 —— 不要提交进 git、不要出现在公开截图里。
+
+#### 拿到令牌先验证一次（强烈建议）
+
+**在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。PowerShell 里执行（把令牌换成你自己的实际值）：
+
+```powershell
+$body = '{"model":"deepseek-ai/DeepSeek-V3","messages":[{"role":"user","content":"hi"}]}'
+curl.exe https://api-inference.modelscope.cn/v1/chat/completions -H "Authorization: Bearer 你的令牌" -H "Content-Type: application/json" -d $body
+```
+
+| 返回结果 | 含义 |
+|---|---|
+| 一段含 `choices` 的 JSON | ✅ 令牌可用，继续部署 |
+| `401 please bind your alibaba cloud account before use` | 还没绑阿里云账号 / 没完成实名认证 |
+| `401` 或 `Invalid token` | 令牌复制错了，或者不是写权限 |
+| `400 模型不存在` | 模型 ID 不对，见下 |
+
+> **模型 ID 顺便核对**：本项目默认写的是 `deepseek-ai/DeepSeek-V3`。请到魔搭「模型库」筛选 **API-Inference** 标签，确认这个 ID 当前确实可调用；若有出入，把 `FAST_MODEL` / `STRONG_MODEL` 换成列表中的实际 ID（例如 `deepseek-ai/DeepSeek-R1-0528`、`Qwen/Qwen3-32B`）。
 
 ### 第 2 步：创建创空间
 
