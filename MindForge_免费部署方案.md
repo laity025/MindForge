@@ -168,8 +168,9 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | `.dockerignore` | 保护 `backend/.env` 不进镜像，同时瘦身上下文 |
 | `backend/requirements-deploy.txt` | 生产依赖（移除 faster-whisper，显式补上 numpy 与 python-multipart） |
 | `render.yaml` | Render 蓝图：一键部署 + 环境变量声明（Key 不入库） |
-| `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860` |
-| `dist/MindForge_studio.zip` | **给创空间用的干净包（46 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
+| `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方 `environment_variables` 字段预置了 8 个非敏感环境变量（字段已逐项对官方 schema 核对） |
+| `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，共 5 项（用法见第七节「拿到令牌先验证一次」） |
+| `dist/MindForge_studio.zip` | **给创空间用的干净包（约 44 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
 | `MindForge_免费部署方案.md` | 本文档 |
 | `.gitignore`（**唯一被修改的既有文件**） | 追加部署排查临时产物的排除规则（`.deployvenv*/`、`.deploycheck*.py`、`.gitcheck.txt` 等），与应用代码无关 |
 
@@ -368,7 +369,7 @@ git push origin main
 | 文件 | 说明 |
 |---|---|
 | `ms_deploy.json` | 创空间部署配置（**字段已按官方 schema 逐项核对**）：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方支持的 `environment_variables` 字段**预置了 8 个非敏感变量**（`PORT`、两个模型 ID、`LLM_BASE_URL`、`TIMEOUT_MS` 等）—— 你只需再补 `LLM_API_KEY` 一项 |
-| `dist/MindForge_studio.zip` | **可直接上传的干净包（46 MB）**：已剔除 `backend/.env`、`__pycache__`、`tests/`、设计文档与带姓名的 PNG，只保留运行所需内容 |
+| `dist/MindForge_studio.zip` | **可直接上传的干净包（约 44 MB，50 个条目）**：已剔除 `backend/.env`、`__pycache__`、`tests/`、设计文档与带姓名的 PNG，只保留运行所需内容（含 `frontend/vosk/model.tar.gz` —— 浏览器离线识别模型，属运行时必需） |
 
 ### 第 1 步：注册并实名
 
@@ -397,11 +398,12 @@ git push origin main
 
 **在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。
 
-**推荐做法（方式一）：跑一遍完整预检脚本。** 它检测 5 项并给耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力。助手已把脚本写好放在临时目录，PowerShell 里执行：
+**推荐做法（方式一）：跑一遍完整预检脚本。** 项目里已备好 `tests/verify_llm_endpoint.py`，检测 5 项并给出耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力。PowerShell 里执行：
 
 ```powershell
 $env:MS_TOKEN = "ms-你的令牌"
-& "C:\Users\laity\.workbuddy\binaries\python\envs\default\Scripts\python.exe" "$env:TEMP\verify_mindforge_llm.py"
+& "C:\Users\laity\.workbuddy\binaries\python\envs\default\Scripts\python.exe" `
+    "D:\WorkBuddy_Project\MindForge\tests\verify_llm_endpoint.py"
 ```
 
 全部 PASS 再去做部署；有任何一项 FAIL，脚本会在结尾提示可能原因。**其中「流式」那一项尤其关键** —— 前端「逐字上屏」直接依赖它，而这一点只能在你的网络环境里验证（助手所处环境无法替代）。
