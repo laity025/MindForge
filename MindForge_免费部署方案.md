@@ -113,8 +113,7 @@ RuntimeError: Form data requires "python-multipart" to be installed.
 
 本地一直没发现，是因为开发机环境早就装好了它。
 
-**处理**：`requirements-deploy.txt` 已显式补上。
-**建议**：同样补进 `backend/requirements.txt`（见第九节）。
+**处理**：`requirements-deploy.txt` 已显式补上；`backend/requirements.txt` 也已一并补上并推送（见第九节）。
 
 ### 问题 4：端口不能写死 8000
 
@@ -333,17 +332,17 @@ git push origin main
 
 ## 九、遗留与建议
 
-1. **强烈建议修 `backend/requirements.txt`**（除已改的 `.gitignore` 外，这是唯一还等你点头的既有文件改动），补两行：
+1. ✅ **`backend/requirements.txt` 已修复并推送**：补了下面两行，并附英文注释说明理由。
 
    ```text
    numpy>=1.24
    python-multipart>=0.0.9
    ```
 
-   - `python-multipart`：**不加则任何人都跑不起来**（导入期 RuntimeError），直接影响别人克隆仓库后的首次运行体验。
-   - `numpy`：目前靠 faster-whisper 传递依赖，属隐性耦合，一旦哪天移除 faster-whisper 就会连带断掉。
+   - `python-multipart`：**不加则任何人都跑不起来**（`import main` 阶段 RuntimeError），直接影响别人克隆仓库后的首次运行体验。
+   - `numpy`：原本靠 faster-whisper 传递依赖，属隐性耦合，一旦哪天移除 faster-whisper 就会连带断掉。
 
-2. **建议同步更新 `README.md`**：测试条数写的是 53 条，实际已是 77 条。
+2. ✅ **`README.md` 已更正**：单元测试 53 条 → **77 条**（两处）；顺带修掉一个会误导人的错误 —— E2E 运行脚本写的是 `run_e2e.mjs`，实际文件是 **`run_e2e.cjs`**；并在「部署」一节加了指向本方案的入口。
 3. **`frontend/index.html` 引用了 Google Fonts**（`fonts.googleapis.com`），国内加载会超时阻塞字体渲染。虽不致命（有系统字体兜底），但建议改为本地字体或国内 CDN，能明显改善首屏观感。
 4. **Key 轮换**：`backend/.env` 里的真实 Key 从未提交到 git，风险可控；但若曾以其他方式外发过，建议在硅基流动后台重置一次。
 5. **`CORS_ORIGINS` 保持 `*` 的安全性**：本项目前后端同源部署，浏览器不会走跨域，实际等价于关闭跨域。若后续拆分前后端域名，务必改为具体域名。
