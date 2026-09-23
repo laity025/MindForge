@@ -40,8 +40,18 @@ services:
         value: https://api-inference.modelscope.cn/v1
       - key: FAST_MODEL
         value: deepseek-ai/DeepSeek-V4.1-Flash
+      # STRONG_MODEL drives the end-of-session analyst report.
+      # 2026-09-23 measured on ModelScope's free inference API:
+      #   deepseek-ai/DeepSeek-V4-Pro returns HTTP 200 but NO content
+      #   (choices: null / empty content, finish_reason=length) - both
+      #   models are reasoning models and Pro burns the whole output
+      #   budget on reasoning. Result would be a report that SILENTLY
+      #   falls back to the local template, looking fine but generic.
+      #   The Flash variant above DOES return content, so it is used for
+      #   both roles until a better writer is confirmed by
+      #   tests/verify_strong_model.py.
       - key: STRONG_MODEL
-        value: deepseek-ai/DeepSeek-V4-Pro
+        value: deepseek-ai/DeepSeek-V4.1-Flash
 
       # Frontend is served same-origin by this very service,
       # so CORS is not strictly needed. Tighten if you split hosts.

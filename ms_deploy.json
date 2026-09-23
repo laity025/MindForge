@@ -18,7 +18,7 @@
     },
     {
       "name": "STRONG_MODEL",
-      "value": "deepseek-ai/DeepSeek-V4-Pro"
+      "value": "deepseek-ai/DeepSeek-V4.1-Flash"
     },
     {
       "name": "CORS_ORIGINS",

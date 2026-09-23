@@ -170,6 +170,7 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | `render.yaml` | Render 蓝图：一键部署 + 环境变量声明（Key 不入库） |
 | `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方 `environment_variables` 字段预置了 8 个非敏感环境变量（字段已逐项对官方 schema 核对） |
 | `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及**按应用真实载荷（不传 max_tokens）调用强模型出报告**，共 6 项（用法见第七节「拿到令牌先验证一次」） |
+| `tests/verify_strong_model.py` | **强模型候选对比脚本**：把同一份"报告请求"发给多个候选模型，只保留能返回完整 JSON 的那些，并给出推荐值。遇到异常响应会**打印原始响应体**（例如 `choices is null`），不再只是一个看不懂的报错 |
 | `dist/MindForge_studio.zip` | **给创空间用的干净包（约 44 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
 | `MindForge_免费部署方案.md` | 本文档 |
 | `.gitignore`（**唯一被修改的既有文件**） | 追加部署排查临时产物的排除规则（`.deployvenv*/`、`.deploycheck*.py`、`.gitcheck.txt` 等），与应用代码无关 |
@@ -204,21 +205,27 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 >
 > 或直接在浏览器打开 `https://api-inference.modelscope.cn/v1/models`。**2026-09-23 实测：清单里已经没有 `deepseek-ai/DeepSeek-V3`**，`DeepSeek-V4` 系列已接替 —— 不要照抄网上教程里的旧 ID。
 
-**推荐配置（2026-09-23 从官方清单挑选，与本项目《技术方案_AI技术选型》的「Flash 主力 + Pro 出报告」一致）**：
+**推荐配置（2026-09-23 按实测结果定，不是照抄文档）**：
 
 | 用途 | 环境变量 | 模型 ID |
 |---|---|---|
 | 面试官 / 陪练 / 流式对话 | `FAST_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` |
-| 分析师结案报告 | `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4-Pro` |
+| 分析师结案报告 | `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` |
 
-**备选（同期清单内的其他 ID，主选不可用时替换）**：
+> ⚠️ **两个角色暂用同一个模型，原因是一条实测结论**：原计划按《技术方案_AI技术选型》的「Flash 主力 + Pro 出报告」把 `STRONG_MODEL` 设为 `deepseek-ai/DeepSeek-V4-Pro`，但实测该模型**返回 HTTP 200 却没有可用内容**（`choices` 为 `null` / 内容为空，`finish_reason=length`）。两个 DeepSeek 模型都会返回 `reasoning_content`（即**推理型模型**），而 `llm_client.chat_json` **不传 `max_tokens`**，输出预算走平台默认值 —— Pro 把预算全花在推理上，结果一个字的正文都没输出。
+>
+> **后果不是报错，而是 `report_service` 静默退回本地模板报告**：功能正常、内容退化，不查根本发现不了。因此改用**已验证能正常输出正文**的 Flash。若你想要更好的报告质量，先跑 `tests/verify_strong_model.py` 挑一个真正能出完整 JSON 的模型再换。
+
+**备选（同期清单内的其他 ID，主选不可用时替换 —— 换完请跑一次预检确认能出内容）**：
 
 | 档位 | 候选 ID |
 |---|---|
 | 快 | `Qwen/Qwen3.8-Flash-Next`、`ZhipuAI/GLM-4.7-Flash`、`stepfun-ai/Step-3.7-Flash`、`deepseek-ai/DeepSeek-V4-Flash-0731` |
-| 强 | `Qwen/Qwen3.5-397B-A17B`、`ZhipuAI/GLM-5.2`、`MiniMax/MiniMax-M3`、`deepseek-ai/DeepSeek-V4-Pro-0813` |
+| 强 | `Qwen/Qwen3.5-397B-A17B`、`ZhipuAI/GLM-5.2`、`MiniMax/MiniMax-M3`、`mistralai/Mistral-Large-Instruct-2407` |
 
-> ✅ **2026-09-23 已实测闭环**：上面两个 ID **都在当前清单内**（清单共 35 个），且用部署将用的那条令牌**实际调用 `deepseek-ai/DeepSeek-V4.1-Flash` 成功返回了 `choices` 与 `usage`**。模型 ID 与令牌两项均已验证，可以放心部署。
+> ✅ **2026-09-23 已实测闭环**：用部署将用的那条令牌**实际调用 `deepseek-ai/DeepSeek-V4.1-Flash` 成功返回了 `choices` 与 `usage`**（含流式 SSE）。令牌与模型可用性两项均已验证。
+>
+> ❌ **同时实测排除**：`deepseek-ai/DeepSeek-V4-Pro` 无法产出报告正文（见上）；`deepseek-ai/DeepSeek-V3`、`DeepSeek-R1-0528`、`Qwen/Qwen3-32B` 已不在清单内，网上教程里的这些 ID 一律不要照抄。
 
 > 清单同期共 35 个模型（另有 ERNIE、Intern、Mistral、LongCat、Nex、Step 等系列）。**接口不标注每个模型的免费/付费状态**，若某 ID 返回 403/429，换同档位备选即可，代码不用动。
 
@@ -276,7 +283,7 @@ git push origin main
 | `LLM_API_KEY` | `<魔搭访问令牌>` | **唯一必须手填**；`render.yaml` 里用 `sync: false` 标记为不入库 |
 | `LLM_BASE_URL` | `https://api-inference.modelscope.cn/v1` | 换 DeepSeek 官方就填 `https://api.deepseek.com/v1` |
 | `FAST_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` | 面试官 / 陪练角色（要快）；Flash 档适合免费额度 |
-| `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4-Pro` | 分析师报告（要准，一次性批量调用） |
+| `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` | 分析师报告（一次性批量调用）。**暂与 `FAST_MODEL` 相同** —— `DeepSeek-V4-Pro` 实测返回 200 但无正文，会静默退回模板，详见第四节 |
 | `CORS_ORIGINS` | `*` | 前后端同源，实际不生效；若将来拆域名务必改成具体域名 |
 | `TIMEOUT_MS` | `30000` | LLM 单次调用超时（毫秒）：流式取 `30+5=35s` 读间隔上限；非流式取 `30+10=40s` 整包上限。**默认值 2000 会让分析师报告超时并静默退回模板**，见下方说明 |
 | `MAX_TURNS` | `40` | 超过后触发 transcript 压缩 |
@@ -414,6 +421,27 @@ $env:MS_TOKEN = "ms-你的令牌"
 > - 脚本提示 `TIGHT` → 说明耗时接近超时上限，把 `TIMEOUT_MS` 调大（如 `60000`）
 > - 报告必须**有内容且键齐全**（`scores` / `improvements` / `summary`），否则线上会静默降级
 
+#### 如果第 6 项失败：跑候选模型对比
+
+报告出不来，换模型就能解决 —— 但要用实测挑，不要靠猜。项目里已备好 `tests/verify_strong_model.py`：
+
+```powershell
+$env:MS_TOKEN = "ms-你的令牌"
+& "C:\Users\laity\.workbuddy\binaries\python\envs\default\Scripts\python.exe" `
+    "D:\WorkBuddy_Project\MindForge\tests\verify_strong_model.py"
+```
+
+它做四件事：
+
+1. 把**同一份报告请求**依次发给 9 个候选模型 —— 且**只按应用的真实载荷发**（不传 `max_tokens`，与线上完全一致）
+2. 只保留能返回**完整 JSON** 的那些，并打印各自耗时与输出 token 数
+3. 对第一个失败的模型**再带 `max_tokens` 重试一次** —— 用来区分「平台默认预算太小」还是「这个模型根本产不出正文」
+4. 最后给出**可直接粘贴的推荐值**（`STRONG_MODEL = ...`）
+
+> **遇到异常响应它会打印原始响应体**，这一点比什么都重要。像 `{"choices": null}` 这种"HTTP 200 但什么都没产出"的情况，只有看到原始响应才判得出来 —— 只报一句 `TypeError` 是查不出问题的。
+>
+> 想换一批候选：`$env:CANDIDATES = "模型A,模型B"`（用逗号分隔）。
+
 **方式二（只想快速确认能不能通）**，用下面这条一行命令（把令牌换成你自己的实际值）：
 
 ```powershell
@@ -465,7 +493,7 @@ Invoke-RestMethod -Uri "https://api-inference.modelscope.cn/v1/chat/completions"
 LLM_API_KEY      = ms-xxxxxxxx（必须是 ms- 开头的写权限令牌）
 LLM_BASE_URL     = https://api-inference.modelscope.cn/v1
 FAST_MODEL       = deepseek-ai/DeepSeek-V4.1-Flash
-STRONG_MODEL     = deepseek-ai/DeepSeek-V4-Pro
+STRONG_MODEL     = deepseek-ai/DeepSeek-V4.1-Flash
 PORT             = 7860
 CORS_ORIGINS     = *
 TIMEOUT_MS       = 30000
