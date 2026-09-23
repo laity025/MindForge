@@ -11,10 +11,12 @@
 
 | 方案 | 托管成本 | 大模型成本 | 国内访问 | 休眠 | 推荐度 |
 |---|---|---|---|---|---|
-| **A. Render 免费实例** | 0 元 | 魔搭每日 2000 次免费 | 一般（新加坡节点） | 15 分钟空闲休眠，冷启 ~60s | ★★★★☆ 最省事 |
-| **B. 魔搭创空间（国内）** | 0 元（CPU 完全免费） | 魔搭每日 2000 次免费 | 优（国内直连） | 需实测确认 | ★★★★★ 展示首选 |
+| **B. 魔搭创空间（国内）** ⭐ | 0 元（CPU 完全免费） | 魔搭每日 2000 次免费 | 优（国内直连） | 以创建页提示为准 | ★★★★★ **首选** — 无需信用卡，2 vCPU / 16 GB |
+| A. Render 免费实例 | 0 元 | 魔搭每日 2000 次免费 | 一般（新加坡节点） | 15 分钟空闲休眠，冷启 ~60s | ★★☆ **2026-09-23 实测被要求绑定信用卡**，见第五节 |
 | C. 阿里云函数计算 FC | 0 元（100 万次/月） | 同上 | 优 | 不休眠 | ★★★☆ 需改造成 Serverless |
 | D. Koyeb 免费实例 | 0 元 | 同上 | 差（仅法兰克福/华盛顿） | 会暂停 | ★★☆ 备用 |
+
+> **先看第七节。** 如果你在 Render 上被信用卡那道门卡住（很常见），直接走方案 B，不要在 Render 上耗时间 —— 创空间不但不要卡，配置还高得多（2 vCPU / 16 GB vs Render 的 0.1 vCPU / 512 MB）。
 
 **已排除，不要走弯路：**
 
@@ -164,6 +166,8 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | `.dockerignore` | 保护 `backend/.env` 不进镜像，同时瘦身上下文 |
 | `backend/requirements-deploy.txt` | 生产依赖（移除 faster-whisper，显式补上 numpy 与 python-multipart） |
 | `render.yaml` | Render 蓝图：一键部署 + 环境变量声明（Key 不入库） |
+| `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860` |
+| `dist/MindForge_studio.zip` | **给创空间用的干净包（46 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
 | `MindForge_免费部署方案.md` | 本文档 |
 | `.gitignore`（**唯一被修改的既有文件**） | 追加部署排查临时产物的排除规则（`.deployvenv*/`、`.deploycheck*.py`、`.gitcheck.txt` 等），与应用代码无关 |
 
@@ -191,7 +195,16 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 
 ---
 
-## 五、方案 A：Render 部署（最省事）
+## 五、方案 A：Render 部署（⚠️ 可能被信用卡门槛卡住）
+
+> **实测记录（2026-09-23）**：走 **New → Blueprint** 流程时，Render **强制要求绑定信用卡**，点「取消」会直接退出界面，无法继续。
+>
+> 这与 Render 官方文档「No payment is required / no credit card required」的说法不一致 —— 说明这是**账号级风控**，不是文档能解释、也不是我们能绕开的。
+>
+> **可以试一步**：改用 **New → Web Service**（不走 Blueprint），Language 选 **Docker**、Instance Type 选 **Free**，看是否同样要卡。
+> **若仍被拦，立刻转向第七节的魔搭创空间**，不要在 Render 上耗时间：创空间不要卡，而且 **2 vCPU / 16 GB** 对比 Render 的 **0.1 vCPU / 512 MB**，完全是两个量级。
+>
+> 下面的步骤保留备用，若你换到了可用卡的账号或 Render 放开了风控，依然可直接照做。
 
 ### 第 1 步：把部署物料推上 GitHub —— **不要用 `git add .`** ⚠️
 
@@ -254,6 +267,8 @@ git push origin main
 
 ## 六、保活：让网址「秒开」（强烈建议做）
 
+> **本节以 Render 免费实例为例**。魔搭创空间若也存在休眠，同样可以用这套探针 —— 把 URL 换成创空间地址即可，逻辑完全一样。
+
 **为什么必须做**：Render 免费实例 15 分钟无流量即休眠，下一位访问者要等约 60 秒。评委点开链接等 60 秒 = 直接减分。保活 = 让一个免费探针每 14 分钟自动访问一次 `/health`，让实例一直醒着。
 
 ### 逐步配置（cron-job.org，推荐）
@@ -286,30 +301,87 @@ git push origin main
 
 ---
 
-## 七、方案 B：魔搭创空间（国内展示首选）
+## 七、方案 B：魔搭创空间（⭐ 首选路径，无需信用卡）
 
-优势：**CPU 资源完全免费**、国内直连无墙、和免费 LLM 额度同源。
+**为什么是首选**（2026-09-23 核实）：
 
-### 步骤
+| 对比项 | 魔搭创空间 | Render 免费 |
+|---|---|---|
+| 信用卡 | **不需要**（仅需实名认证） | **实测被要求绑卡** |
+| CPU / 内存 | **2 vCPU / 16 GB** | 0.1 vCPU / 512 MB |
+| 国内访问 | 优（阿里云国内节点） | 一般（新加坡节点） |
+| 大模型额度 | 同厂商，一次注册两处通用 | 需另行配 Key |
+| 交付方式 | 上传文件夹 / Git 推送 | Git 仓库连接 |
 
-1. `modelscope.cn` 登录 → 顶部「创空间」→ 创建创空间
-2. 类型选 **Docker**，可见性先设「私有」调通再改公开
-3. 关联 Git 仓库或用网页上传代码（含 `Dockerfile`）
-4. 环境变量 / Secrets 里配置：
-   ```
-   LLM_API_KEY   = <魔搭访问令牌>
-   LLM_BASE_URL  = https://api-inference.modelscope.cn/v1
-   FAST_MODEL    = deepseek-ai/DeepSeek-V3
-   STRONG_MODEL  = deepseek-ai/DeepSeek-V3
-   PORT          = 7860
-   ```
-5. 构建完成后得到 HTTPS 访问地址
+免费的云资源配置名称是 **`platform/2v-cpu-16g-mem`**（2 核 CPU + 16G 内存，轻量应用，免费）。
+
+### 平台硬性要求（已逐条对齐）
+
+- **服务端口必须是 7860** —— 已通过 `PORT` 环境变量适配，无需改代码
+- **项目根目录必须有 `Dockerfile`** —— 已就绪
+- **前后端必须合并进一个容器** —— 本项目本来就是「FastAPI 同时托管静态前端」的单进程结构，天然满足
+
+### 已为你准备好的创空间物料
+
+| 文件 | 说明 |
+|---|---|
+| `ms_deploy.json` | 创空间部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860` |
+| `dist/MindForge_studio.zip` | **可直接上传的干净包（46 MB）**：已剔除 `backend/.env`、`__pycache__`、`tests/`、设计文档与带姓名的 PNG，只保留运行所需内容 |
+
+### 第 1 步：注册并实名
+
+1. 打开 `modelscope.cn`，用**阿里云账号**登录（没有就注册一个，不收费、**不需要信用卡**）
+2. 完成**实名认证**（个人认证，准备身份证；通常 1–2 个工作日）
+3. 顺手去「账号设置 → 访问令牌」创建一个 Token，**勾选「大模型推理」权限**，后面 `LLM_API_KEY` 要用
+
+### 第 2 步：创建创空间
+
+1. 顶部导航「创空间」→「创建创空间」
+2. 选**编程式创建**，模式选**「快速部署并创建」**
+3. 填写名称、描述；**可见性先设「私有」**，调通后再改公开
+4. 云资源选 **CPU basic（免费）**
+5. **上传 `dist/MindForge_studio.zip`**（或解压后上传整个项目文件夹）
+6. 点「确认创建并部署」
+
+### 第 3 步：配置环境变量
+
+在创空间的「环境变量 / Secrets」里加上：
+
+```ini
+LLM_API_KEY      = <魔搭访问令牌>
+LLM_BASE_URL     = https://api-inference.modelscope.cn/v1
+FAST_MODEL       = deepseek-ai/DeepSeek-V3
+STRONG_MODEL     = deepseek-ai/DeepSeek-V3
+PORT             = 7860
+CORS_ORIGINS     = *
+TIMEOUT_MS       = 5000
+MAX_TURNS        = 40
+MAX_DURATION_MIN = 20
+```
+
+> **`PORT=7860` 不能漏**，这是平台硬性要求。
+> 不配 `LLM_API_KEY` 也能跑（自动回退 Mock），但那就没有真实模型效果了。
+
+### 第 4 步：构建与验收
+
+构建完成后拿到访问地址。**第一件事是看首页有没有样式** —— 若「页面能打开但完全没有样式」，说明访问地址被反代在子路径下（原因见第一节「访问地址长什么样」），需要平台提供独立域名。
+
+### Git 推送方式（备选，不想手动上传时用）
+
+```bash
+git clone https://www.modelscope.cn/studios/<你的命名空间>/<空间名>.git
+cd <空间名>
+# 把项目内容复制进来，注意不要带上 backend/.env
+git add -A
+git commit -m "init: MindForge"
+git push
+```
 
 ### 注意事项
 
-- **端口必须是 7860**（平台规定），已通过 `PORT` 环境变量适配
-- 免费 CPU 实例的具体规格与休眠策略，官方文档页面为动态渲染无法直接抓取，**请以创建页面提示为准**，建议先建一个测试空间实测冷启动耗时
-- 若平台要求提供 `README.md` 元信息，按其创建向导的提示补即可
+- **「本机 whisper 精准校准」这个可选功能没被打进包里**：`POST /api/asr/recognize` 走的是精简依赖清单（不含 faster-whisper）。创空间有 16 GB 内存，**其实装得下**（base 模型约需 1 GB）—— 若想要这个功能，把 Dockerfile 里的依赖文件从 `requirements-deploy.txt` 换成 `backend/requirements.txt` 即可（代价是镜像大 200MB+、构建变慢）。前端默认走浏览器离线识别，不影响主流程。
+- 免费实例的休眠策略以创建页提示为准，**建好后实测一次冷启动耗时**。
+- 若平台要求提供 `README.md` 元信息，按其创建向导提示补即可（仓库里已有 `README.md`）。
 
 ---
 
