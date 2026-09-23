@@ -183,7 +183,7 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 
 | 渠道 | 免费额度 | 端点 | 备注 |
 |---|---|---|---|
-| **魔搭 ModelScope** | **每日 2000 次**（单模型约 500 次，如 DeepSeek-V3），0 点重置，超额返 429 **不扣费** | `https://api-inference.modelscope.cn/v1` | 需**绑定阿里云账号 + 实名认证**，否则每次调用 401 |
+| **魔搭 ModelScope** | **每日 2000 次**，0 点重置，超额返 429 **不扣费** | `https://api-inference.modelscope.cn/v1` | 需**绑定阿里云账号 + 实名认证**，否则每次调用 401 |
 | 硅基流动 SiliconFlow | 注册赠 14 元 + 部分永久免费模型 | `https://api.siliconflow.cn/v1` | 你本地 `.env` 现在用的就是这家 |
 
 **推荐用魔搭** —— 它和部署平台（创空间）是同一家，一次注册两处通用，且国内直连。
@@ -192,6 +192,32 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 1. `modelscope.cn` 注册 → 绑定阿里云账号 → 完成实名
 2. 个人中心 → 访问令牌 → 新建 → **选「写权限令牌」（Write Permission）**（选错类型的后果与验证方法见第七节「访问令牌该选哪种？」）
 3. 把令牌填到部署平台的环境变量 `LLM_API_KEY`
+
+> ⚠️ **令牌格式必须是 `ms-` 开头**。如果你复制到的是 `sk-`（那是阿里百炼的 Key）或别的形状，说明复制错了对象 —— 调用时会返回 `401 Authentication failed`（2026-09-23 实测确认，详见第七节）。
+
+> ⚠️ **模型 ID 必须带命名空间前缀，而且这个清单会变**。魔搭的免费推理清单随模型迭代更新，**当前有效列表可以不带令牌直接查**（这个接口是公开的，实测无需鉴权）：
+>
+> ```powershell
+> (Invoke-RestMethod -Uri "https://api-inference.modelscope.cn/v1/models").data.id
+> ```
+>
+> 或直接在浏览器打开 `https://api-inference.modelscope.cn/v1/models`。**2026-09-23 实测：清单里已经没有 `deepseek-ai/DeepSeek-V3`**，`DeepSeek-V4` 系列已接替 —— 不要照抄网上教程里的旧 ID。
+
+**推荐配置（2026-09-23 从官方清单挑选，与本项目《技术方案_AI技术选型》的「Flash 主力 + Pro 出报告」一致）**：
+
+| 用途 | 环境变量 | 模型 ID |
+|---|---|---|
+| 面试官 / 陪练 / 流式对话 | `FAST_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` |
+| 分析师结案报告 | `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4-Pro` |
+
+**备选（同期清单内的其他 ID，主选不可用时替换）**：
+
+| 档位 | 候选 ID |
+|---|---|
+| 快 | `Qwen/Qwen3.8-Flash-Next`、`ZhipuAI/GLM-4.7-Flash`、`stepfun-ai/Step-3.7-Flash`、`deepseek-ai/DeepSeek-V4-Flash-0731` |
+| 强 | `Qwen/Qwen3.5-397B-A17B`、`ZhipuAI/GLM-5.2`、`MiniMax/MiniMax-M3`、`deepseek-ai/DeepSeek-V4-Pro-0813` |
+
+> 清单同期共 35 个模型（另有 ERNIE、Intern、Mistral、LongCat、Nex、Step 等系列）。**接口不标注每个模型的免费/付费状态**，若某 ID 返回 403/429，换同档位备选即可，代码不用动。
 
 > 另外，项目无 Key 会自动回退本地 Mock 生成器。**演示兜底方案：不配 Key 也能完整走通全流程**，只是回答内容为预置模板。
 
@@ -246,13 +272,21 @@ git push origin main
 |---|---|---|
 | `LLM_API_KEY` | `<魔搭访问令牌>` | **唯一必须手填**；`render.yaml` 里用 `sync: false` 标记为不入库 |
 | `LLM_BASE_URL` | `https://api-inference.modelscope.cn/v1` | 换 DeepSeek 官方就填 `https://api.deepseek.com/v1` |
-| `FAST_MODEL` | `deepseek-ai/DeepSeek-V3` | 面试官 / 陪练角色（要快） |
-| `STRONG_MODEL` | `deepseek-ai/DeepSeek-V3` | 分析师报告（要准） |
+| `FAST_MODEL` | `deepseek-ai/DeepSeek-V4.1-Flash` | 面试官 / 陪练角色（要快）；Flash 档适合免费额度 |
+| `STRONG_MODEL` | `deepseek-ai/DeepSeek-V4-Pro` | 分析师报告（要准，一次性批量调用） |
 | `CORS_ORIGINS` | `*` | 前后端同源，实际不生效；若将来拆域名务必改成具体域名 |
-| `TIMEOUT_MS` | `5000` | LLM 单次调用超时（毫秒）——默认值 2000 对公网偏紧，容易误判超时 |
+| `TIMEOUT_MS` | `30000` | LLM 单次调用超时（毫秒）：流式取 `30+5=35s` 读间隔上限；非流式取 `30+10=40s` 整包上限。**默认值 2000 会让分析师报告超时并静默退回模板**，见下方说明 |
 | `MAX_TURNS` | `40` | 超过后触发 transcript 压缩 |
 | `MAX_DURATION_MIN` | `20` | 单场训练时长上限 |
 | `PORT` | **不要设置** | Render 自动注入，Dockerfile 已用 `${PORT}` 读取；手填反而会冲突 |
+
+> **为什么 `TIMEOUT_MS` 要调到 30000（实测推导，容易被忽略）**：
+> `services/llm_client.py` 里三处超时都从这一个值派生 ——
+> - 流式对话（面试官）：`TIMEOUT_MS/1000 + 5`，即每两次数据之间的**读间隔**上限（不是整段时长，长回答不会因此被截断）；
+> - 教练侧栏 JSON：`TIMEOUT_MS/1000 + 10`；
+> - **分析师报告 JSON：同样是 `TIMEOUT_MS/1000 + 10`** —— 而它是一次性非流式调用 `STRONG_MODEL` 生成整份结构化报告，输出上千 token，免费共享端点排队时很容易超过 15 秒。
+>
+> 后果不是报错，而是**静默降级**：`report_service` 捕获异常后回退到本地模板报告。表现为「功能正常，但报告读起来像模板」。如果遇到这种情况，先把 `TIMEOUT_MS` 往上调（如 `60000`）再排查别的。
 
 > **兜底很重要**：`LLM_API_KEY` 为空时后端自动回退本地 Mock 生成器，全流程依然跑得通（回答为预置模板）。也就是说哪怕令牌当天失效，评委点开链接也不会白屏 —— 这是演示时最实用的一层保险。
 
@@ -359,18 +393,32 @@ git push origin main
 **在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。PowerShell 里执行（把令牌换成你自己的实际值）：
 
 ```powershell
-$body = '{"model":"deepseek-ai/DeepSeek-V3","messages":[{"role":"user","content":"hi"}]}'
-curl.exe https://api-inference.modelscope.cn/v1/chat/completions -H "Authorization: Bearer 你的令牌" -H "Content-Type: application/json" -d $body
+$tok  = "ms-你的令牌"
+$head = @{ Authorization = "Bearer $tok"; "Content-Type" = "application/json" }
+$body = @{
+  model      = "deepseek-ai/DeepSeek-V4.1-Flash"
+  messages   = @(@{ role = "user"; content = "hi" })
+  max_tokens = 8
+} | ConvertTo-Json -Depth 6
+Invoke-RestMethod -Uri "https://api-inference.modelscope.cn/v1/chat/completions" -Method Post -Headers $head -Body $body
 ```
+
+> ⚠️ **不要用 `curl.exe -d '{"model":...}'` 这种写法测**。PowerShell 5.1 把参数交给 `curl.exe` 时会**吃掉 JSON 里的双引号**，服务端收到的 `model` 是空的，于是返回一个极具误导性的报错：
+>
+> ```
+> {"error":{"message":"Invalid model id: "}}
+> ```
+>
+> 注意冒号后面是**空的** —— 这不是「模型 ID 写错了」，而是**请求体根本没送达**。上面用 `Invoke-RestMethod` + `ConvertTo-Json` 的写法由 PowerShell 自己构造 JSON，完全绕开这个坑。
 
 | 返回结果 | 含义 |
 |---|---|
 | 一段含 `choices` 的 JSON | ✅ 令牌可用，继续部署 |
 | `401 please bind your alibaba cloud account before use` | 还没绑阿里云账号 / 没完成实名认证 |
-| `401` 或 `Invalid token` | 令牌复制错了，或者不是写权限 |
-| `400 模型不存在` | 模型 ID 不对，见下 |
+| `401 Authentication failed, please make sure that a valid ModelScope token is supplied.` | **令牌本身不被接受**：格式不对（不是 `ms-` 开头）、复制错对象，或已失效 |
+| `400` 且提示模型不存在 | 模型 ID 不在当前清单里，用第四节的 `/v1/models` 查最新有效 ID |
 
-> **模型 ID 顺便核对**：本项目默认写的是 `deepseek-ai/DeepSeek-V3`。请到魔搭「模型库」筛选 **API-Inference** 标签，确认这个 ID 当前确实可调用；若有出入，把 `FAST_MODEL` / `STRONG_MODEL` 换成列表中的实际 ID（例如 `deepseek-ai/DeepSeek-R1-0528`、`Qwen/Qwen3-32B`）。
+> **实测记录（2026-09-23）**：用一个**非 `ms-` 开头**的令牌测试，返回的正是上面第三条 `401 Authentication failed`。对照实验确认该消息是**通用鉴权失败**（伪造令牌、不带令牌的返回完全一致），另外 `/v1/models` 接口**无需鉴权**即可访问，因此它给出的 35 个模型 ID 是**平台级真实清单**，可以直接照抄。
 
 ### 第 2 步：创建创空间
 
@@ -386,13 +434,13 @@ curl.exe https://api-inference.modelscope.cn/v1/chat/completions -H "Authorizati
 在创空间的「环境变量 / Secrets」里加上：
 
 ```ini
-LLM_API_KEY      = <魔搭访问令牌>
+LLM_API_KEY      = ms-xxxxxxxx（必须是 ms- 开头的写权限令牌）
 LLM_BASE_URL     = https://api-inference.modelscope.cn/v1
-FAST_MODEL       = deepseek-ai/DeepSeek-V3
-STRONG_MODEL     = deepseek-ai/DeepSeek-V3
+FAST_MODEL       = deepseek-ai/DeepSeek-V4.1-Flash
+STRONG_MODEL     = deepseek-ai/DeepSeek-V4-Pro
 PORT             = 7860
 CORS_ORIGINS     = *
-TIMEOUT_MS       = 5000
+TIMEOUT_MS       = 30000
 MAX_TURNS        = 40
 MAX_DURATION_MIN = 20
 ```
@@ -482,6 +530,7 @@ git push
 - [ ] 开始一次训练：面试官开场白能**流式逐字上屏**（验证 SSE 在平台代理下未被缓冲）
 - [ ] 教练面板填充词统计有实时数字（前端正则，验证静态资源加载正常）
 - [ ] 结束训练能出报告并**下载 PDF**（验证 jsPDF 与中文字体正常）
+- [ ] 报告内容是**针对本场对话的**，而不是固定模板 —— 若读起来像模板，多半是分析师调用超时后静默降级，把 `TIMEOUT_MS` 调大（见第五节说明）
 - [ ] 刷新页面后历史会话仍在（验证 localStorage 正常）
 - [ ] 访问体验：发链接前自己先打开一次预热（走创空间）／保活探针已配好（走 Render）
 

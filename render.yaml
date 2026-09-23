@@ -42,8 +42,14 @@ services:
       - key: CORS_ORIGINS
         value: "*"
 
+      # TIMEOUT_MS drives every LLM HTTP timeout (services/llm_client.py):
+      #   streaming  -> per-read-gap ceiling = TIMEOUT_MS/1000 + 5
+      #   non-stream -> whole-response ceiling = TIMEOUT_MS/1000 + 10
+      # The analyst report is a single non-stream call to STRONG_MODEL and
+      # needs to generate a full structured JSON, so a small value makes it
+      # silently fall back to the local mock report. 30000 => 40s ceiling.
       - key: TIMEOUT_MS
-        value: "5000"
+        value: "30000"
       - key: MAX_TURNS
         value: "40"
       - key: MAX_DURATION_MIN
