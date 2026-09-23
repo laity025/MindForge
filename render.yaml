@@ -30,12 +30,18 @@ services:
       #     OpenAI-compatible inference API (2000 requests/day free,
       #     needs an Alibaba Cloud account bound + real-name verified).
       #     Switch to DeepSeek / Qwen / SiliconFlow by editing these.
+      #
+      #     Model ids served by the free inference API change over time.
+      #     The live list is PUBLIC (no auth needed) - open this in a
+      #     browser, or: curl https://api-inference.modelscope.cn/v1/models
+      #     Verified 2026-09-23: deepseek-ai/DeepSeek-V3 is NO LONGER
+      #     served; the V4 generation replaced it.
       - key: LLM_BASE_URL
         value: https://api-inference.modelscope.cn/v1
       - key: FAST_MODEL
-        value: deepseek-ai/DeepSeek-V3
+        value: deepseek-ai/DeepSeek-V4.1-Flash
       - key: STRONG_MODEL
-        value: deepseek-ai/DeepSeek-V3
+        value: deepseek-ai/DeepSeek-V4-Pro
 
       # Frontend is served same-origin by this very service,
       # so CORS is not strictly needed. Tighten if you split hosts.
