@@ -169,7 +169,7 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | `backend/requirements-deploy.txt` | 生产依赖（移除 faster-whisper，显式补上 numpy 与 python-multipart） |
 | `render.yaml` | Render 蓝图：一键部署 + 环境变量声明（Key 不入库） |
 | `ms_deploy.json` | **魔搭创空间**部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方 `environment_variables` 字段预置了 8 个非敏感环境变量（字段已逐项对官方 schema 核对） |
-| `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，共 5 项（用法见第七节「拿到令牌先验证一次」） |
+| `tests/verify_llm_endpoint.py` | **部署前预检脚本**：一次验证模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及**按应用真实载荷（不传 max_tokens）调用强模型出报告**，共 6 项（用法见第七节「拿到令牌先验证一次」） |
 | `dist/MindForge_studio.zip` | **给创空间用的干净包（约 44 MB）**：剔除 `.env` / 设计文档 / 带姓名的 PNG，只留运行所需内容。未纳入 git（`dist/` 已忽略） |
 | `MindForge_免费部署方案.md` | 本文档 |
 | `.gitignore`（**唯一被修改的既有文件**） | 追加部署排查临时产物的排除规则（`.deployvenv*/`、`.deploycheck*.py`、`.gitcheck.txt` 等），与应用代码无关 |
@@ -398,7 +398,7 @@ git push origin main
 
 **在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。
 
-**推荐做法（方式一）：跑一遍完整预检脚本。** 项目里已备好 `tests/verify_llm_endpoint.py`，检测 5 项并给出耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力。PowerShell 里执行：
+**推荐做法（方式一）：跑一遍完整预检脚本。** 项目里已备好 `tests/verify_llm_endpoint.py`，检测 **6 项**并给出耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力，以及第 6 项**「按应用真实载荷调用」**。PowerShell 里执行：
 
 ```powershell
 $env:MS_TOKEN = "ms-你的令牌"
@@ -407,6 +407,12 @@ $env:MS_TOKEN = "ms-你的令牌"
 ```
 
 全部 PASS 再去做部署；有任何一项 FAIL，脚本会在结尾提示可能原因。**其中「流式」那一项尤其关键** —— 前端「逐字上屏」直接依赖它，而这一点只能在你的网络环境里验证（助手所处环境无法替代）。
+
+> **第 6 项为什么重要（2026-09-23 新增）**：`llm_client.chat_json` 发请求时**不传 `max_tokens`**，输出预算完全由平台默认值决定；而分析师报告是一次性非流式调用 `STRONG_MODEL` 生成整份 JSON。若该模型是**推理型**（响应里带 `reasoning_content`），推理过程会先吃掉输出预算，可能出现 **HTTP 200 但 `content` 为空** —— 此时 `report_service` 会**静默退回本地模板报告**，功能看起来正常、内容却是模板。所以第 6 项按真实载荷调一次，并断言返回的是完整 JSON、同时打印耗时与 `finish_reason`。
+>
+> - `finish_reason=length` → 被截断，需换模型或显式放宽 `max_tokens`
+> - 脚本提示 `TIGHT` → 说明耗时接近超时上限，把 `TIMEOUT_MS` 调大（如 `60000`）
+> - 报告必须**有内容且键齐全**（`scores` / `improvements` / `summary`），否则线上会静默降级
 
 **方式二（只想快速确认能不能通）**，用下面这条一行命令（把令牌换成你自己的实际值）：
 
