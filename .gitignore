@@ -22,3 +22,14 @@ tests/e2e/smoke_*.cjs
 # ---- 系统文件 ----
 Thumbs.db
 .DS_Store
+
+# ---- 部署排查临时产物（venv / 探针脚本）----
+.deployvenv*/
+.deploycheck*.py
+.finalcheck*.py
+.deploycheck_out.txt
+.finalcheck_out.txt
+.probe*_tmp.py
+.final_probe*.py
+.probe_final.py
+.gitcheck.txt

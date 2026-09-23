@@ -7,3 +7,14 @@ pypdf>=4.0
 python-docx>=1.1.0
 faster-whisper>=1.0.0
 opencc-python-reimplemented>=0.1.7
+
+# Required: top-level `import numpy` in routers/asr.py.
+# Previously satisfied only as a transitive dependency of faster-whisper,
+# so removing faster-whisper would break startup. Keep it explicit.
+numpy>=1.24
+
+# Required: routers/profile.py and routers/asr.py declare UploadFile params,
+# and FastAPI validates multipart support at route-registration time.
+# Missing this makes `import main` fail, i.e. the app cannot start at all.
+# It is NOT a dependency of fastapi or uvicorn.
+python-multipart>=0.0.9

@@ -1,0 +1,37 @@
+# ============================================================
+#  Docker build context exclusions for MindForge
+# ============================================================
+# SECURITY: backend/.env holds a real LLM API key. If it is copied
+# into the image, the key is baked into an image layer and readable
+# by anyone who can pull the image. Never let it in.
+.env
+backend/.env
+*.env.local
+*.env.bak
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- Node / build output ----
+node_modules/
+dist/
+
+# ---- Not needed at runtime (shrinks build + upload time) ----
+tests/
+.workbuddy/
+.git/
+.gitignore
+.idea/
+.vscode/
+*.md
+*.png
+*.wav
+*.zip
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

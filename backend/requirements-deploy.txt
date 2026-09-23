@@ -1,0 +1,49 @@
+# ============================================================
+#  MindForge deployment requirements (free-tier Docker hosts)
+# ============================================================
+# Differs from backend/requirements.txt in ONE way:
+#   faster-whisper is REMOVED - and numpy is added explicitly.
+#
+# Why faster-whisper is removed:
+#   1. It drags in ctranslate2 / av / tokenizers, ballooning the
+#      image by ~200MB+ and slowing every rebuild.
+#   2. Loading the base model needs ~1GB RAM; free instances give
+#      512MB, so one stray call would OOM the whole container.
+#   3. It is lazy-imported inside routers/asr.py (_get_model), so it
+#      only loads when POST /api/asr/recognize is actually called.
+#      Verified: with the module force-blocked, `import main`,
+#      GET /, GET /health and the coach/session APIs all still work.
+#   4. The frontend already defaults to browser-side offline speech
+#      recognition; this endpoint is only an optional "precision"
+#      channel. Without the package it returns a clean 500 instead
+#      of taking the service down.
+#
+# Why numpy is added explicitly (IMPORTANT):
+#   routers/asr.py has a MODULE-LEVEL `import numpy as np`. The
+#   original requirements.txt never listed numpy - it arrived only as
+#   a transitive dependency of faster-whisper. Remove faster-whisper
+#   without pinning numpy and the app dies at startup with
+#   ModuleNotFoundError: No module named 'numpy'. Verified by probe.
+#
+# Also note: opencc and httpx are module-level imports too, hence kept.
+# pypdf / python-docx are function-level (lazy) but cheap - keep them.
+#
+# python-multipart is REQUIRED AT IMPORT TIME (added below):
+#   routers/profile.py and routers/asr.py declare `UploadFile` params.
+#   FastAPI validates multipart support while registering those routes,
+#   so a missing python-multipart raises RuntimeError during `import main`
+#   and the container never starts at all. It is not a transitive dep of
+#   fastapi/uvicorn, so it MUST be listed explicitly. Same gap exists in
+#   backend/requirements.txt - see the deployment doc, section 9.
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-dotenv==1.0.1
+httpx==0.27.2
+pydantic==2.9.2
+pypdf>=4.0
+python-docx>=1.1.0
+opencc-python-reimplemented>=0.1.7
+numpy>=1.24
+python-multipart>=0.0.9
+

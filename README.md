@@ -69,18 +69,19 @@ STRONG_MODEL=deepseek-chat                  # 报告强模型（可换 deepseek-
 ## ✅ 测试
 
 ```bash
-# 单元 / 契约测试（53 条：API + SSE + 安全护栏 + 正则指标 + 静态样式校验）
+# 单元 / 契约测试（77 条：API + SSE + 安全护栏 + 正则指标 + 静态样式校验）
 python tests/run_tests.py
 
 # 端到端浏览器测试（Playwright + Chromium，见 tests/e2e/）
-node tests/e2e/run_e2e.mjs
+node tests/e2e/run_e2e.cjs
 ```
 
 ## 🚢 部署
 
 应用为「FastAPI 后端 + 静态前端」单进程结构，适合：
 
-- **轻量 VPS / 云主机**（推荐）：
+- **完全免费上线（0 元，参赛 / 演示首选）**：见根目录 [`MindForge_免费部署方案.md`](MindForge_免费部署方案.md)。仓库已自带 `Dockerfile` + `render.yaml`，可一键部署到 **Render 免费实例** 或 **魔搭创空间**（CPU 完全免费），大模型走魔搭推理 API 每日 2000 次免费额度。
+- **轻量 VPS / 云主机**：
 
   ```bash
   cd backend
@@ -117,7 +118,7 @@ MindForge/
 ├─ frontend/                # 原生前端（token.css 落地 UI/UX v2.0 设计规范）
 │  ├─ styles/               # token.css + app.css（含响应式三断点 / reduced-motion）
 │  └─ js/                   # api_client / metrics_engine / transcript_store / guardrail_state / storage / app
-├─ tests/                   # run_tests.py（53 条）+ e2e/ + 分阶段测试用例文档
+├─ tests/                   # run_tests.py（77 条）+ e2e/ + 分阶段测试用例文档
 ├─ start.bat / start.sh     # 一键启动
 └─ docs（根目录 Markdown）：PRD / UIUX / 技术选型 / 开发规划 / 测试报告
 ```

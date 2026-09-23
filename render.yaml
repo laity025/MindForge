@@ -1,0 +1,50 @@
+# ============================================================
+#  Render Blueprint - free tier deployment for MindForge
+#  Docs: https://render.com/docs/blueprint-spec
+# ============================================================
+#  How to use:
+#    1. Push this repo to GitHub.
+#    2. Render Dashboard -> New -> Blueprint -> pick the repo.
+#    3. Render reads this file and asks for LLM_API_KEY once
+#       (because sync: false means "do not store in git").
+#    4. Free plan: 512MB RAM / 0.1 CPU, sleeps after 15 min idle.
+# ============================================================
+services:
+  - type: web
+    name: mindforge
+    runtime: docker
+    plan: free
+    # Singapore is the closest free region to mainland China
+    # (alternatives: oregon / ohio / virginia / frankfurt)
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # --- Secret: entered in the Render UI, never committed ---
+      - key: LLM_API_KEY
+        sync: false
+
+      # --- LLM endpoint. Default here is ModelScope's free
+      #     OpenAI-compatible inference API (2000 requests/day free,
+      #     needs an Alibaba Cloud account bound + real-name verified).
+      #     Switch to DeepSeek / Qwen / SiliconFlow by editing these.
+      - key: LLM_BASE_URL
+        value: https://api-inference.modelscope.cn/v1
+      - key: FAST_MODEL
+        value: deepseek-ai/DeepSeek-V3
+      - key: STRONG_MODEL
+        value: deepseek-ai/DeepSeek-V3
+
+      # Frontend is served same-origin by this very service,
+      # so CORS is not strictly needed. Tighten if you split hosts.
+      - key: CORS_ORIGINS
+        value: "*"
+
+      - key: TIMEOUT_MS
+        value: "5000"
+      - key: MAX_TURNS
+        value: "40"
+      - key: MAX_DURATION_MIN
+        value: "20"
