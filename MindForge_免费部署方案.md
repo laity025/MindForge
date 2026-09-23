@@ -217,6 +217,8 @@ tests/run_tests.py  ->  总计 77 | 通过 77 | 失败 0
 | 快 | `Qwen/Qwen3.8-Flash-Next`、`ZhipuAI/GLM-4.7-Flash`、`stepfun-ai/Step-3.7-Flash`、`deepseek-ai/DeepSeek-V4-Flash-0731` |
 | 强 | `Qwen/Qwen3.5-397B-A17B`、`ZhipuAI/GLM-5.2`、`MiniMax/MiniMax-M3`、`deepseek-ai/DeepSeek-V4-Pro-0813` |
 
+> ✅ **2026-09-23 已实测闭环**：上面两个 ID **都在当前清单内**（清单共 35 个），且用部署将用的那条令牌**实际调用 `deepseek-ai/DeepSeek-V4.1-Flash` 成功返回了 `choices` 与 `usage`**。模型 ID 与令牌两项均已验证，可以放心部署。
+
 > 清单同期共 35 个模型（另有 ERNIE、Intern、Mistral、LongCat、Nex、Step 等系列）。**接口不标注每个模型的免费/付费状态**，若某 ID 返回 403/429，换同档位备选即可，代码不用动。
 
 > 另外，项目无 Key 会自动回退本地 Mock 生成器。**演示兜底方案：不配 Key 也能完整走通全流程**，只是回答内容为预置模板。
@@ -352,17 +354,20 @@ git push origin main
 
 免费的云资源配置名称是 **`platform/2v-cpu-16g-mem`**（2 核 CPU + 16G 内存，轻量应用，免费）。
 
-### 平台硬性要求（已逐条对齐）
+### 平台硬性要求（已逐条对齐官方 schema）
+
+> 以下不是推测 —— 来自平台自己的部署配置 schema（公开可读）：`https://modelscope.cn/api/v1/studios/deploy_schema.json`。其中写明 `platform/2v-cpu-16g-mem` 是 **"available to all users at no cost"**（对所有用户免费），而 Docker 类型的 `port` 约束是 **`const: 7860`**（必须是且只能是 7860）。
 
 - **服务端口必须是 7860** —— 已通过 `PORT` 环境变量适配，无需改代码
 - **项目根目录必须有 `Dockerfile`** —— 已就绪
 - **前后端必须合并进一个容器** —— 本项目本来就是「FastAPI 同时托管静态前端」的单进程结构，天然满足
+- **非敏感配置可直接写进 `ms_deploy.json` 的 `environment_variables`** —— 官方字段，已为你预置好
 
 ### 已为你准备好的创空间物料
 
 | 文件 | 说明 |
 |---|---|
-| `ms_deploy.json` | 创空间部署配置：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860` |
+| `ms_deploy.json` | 创空间部署配置（**字段已按官方 schema 逐项核对**）：`sdk_type: docker`、`resource_configuration: platform/2v-cpu-16g-mem`、`port: 7860`；并用官方支持的 `environment_variables` 字段**预置了 8 个非敏感变量**（`PORT`、两个模型 ID、`LLM_BASE_URL`、`TIMEOUT_MS` 等）—— 你只需再补 `LLM_API_KEY` 一项 |
 | `dist/MindForge_studio.zip` | **可直接上传的干净包（46 MB）**：已剔除 `backend/.env`、`__pycache__`、`tests/`、设计文档与带姓名的 PNG，只保留运行所需内容 |
 
 ### 第 1 步：注册并实名
@@ -390,7 +395,18 @@ git push origin main
 
 #### 拿到令牌先验证一次（强烈建议）
 
-**在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。PowerShell 里执行（把令牌换成你自己的实际值）：
+**在部署之前就把令牌测通**，否则等容器构建完才发现 401，排查成本会高很多。
+
+**推荐做法（方式一）：跑一遍完整预检脚本。** 它检测 5 项并给耗时 —— 模型清单、两个模型各自的非流式调用、**流式 SSE**、JSON 解析能力。助手已把脚本写好放在临时目录，PowerShell 里执行：
+
+```powershell
+$env:MS_TOKEN = "ms-你的令牌"
+& "C:\Users\laity\.workbuddy\binaries\python\envs\default\Scripts\python.exe" "$env:TEMP\verify_mindforge_llm.py"
+```
+
+全部 PASS 再去做部署；有任何一项 FAIL，脚本会在结尾提示可能原因。**其中「流式」那一项尤其关键** —— 前端「逐字上屏」直接依赖它，而这一点只能在你的网络环境里验证（助手所处环境无法替代）。
+
+**方式二（只想快速确认能不能通）**，用下面这条一行命令（把令牌换成你自己的实际值）：
 
 ```powershell
 $tok  = "ms-你的令牌"
@@ -420,6 +436,8 @@ Invoke-RestMethod -Uri "https://api-inference.modelscope.cn/v1/chat/completions"
 
 > **实测记录（2026-09-23）**：用一个**非 `ms-` 开头**的令牌测试，返回的正是上面第三条 `401 Authentication failed`。对照实验确认该消息是**通用鉴权失败**（伪造令牌、不带令牌的返回完全一致），另外 `/v1/models` 接口**无需鉴权**即可访问，因此它给出的 35 个模型 ID 是**平台级真实清单**，可以直接照抄。
 
+> ⚠️ **补充实测（同日）：这句话不能单独用来判定「令牌无效」。** 在另一个网络环境里用**同一个有效令牌**发请求，得到的同样是这句一模一样的消息；并且已用公开回声服务确认 `Authorization` 头是**完整送达**服务端的（逐一排除了头部丢失、User-Agent、系统代理、出口 IP 等因素，实测出口 IP 落地在国内）。结论是：**唯一可信的判据是「实际调用成功、返回了 `choices`」，而不是「报了哪条错」** —— 所以请务必用上面方式一，在自己的机器上实跑一次再下结论。
+
 ### 第 2 步：创建创空间
 
 1. 顶部导航「创空间」→「创建创空间」
@@ -431,7 +449,9 @@ Invoke-RestMethod -Uri "https://api-inference.modelscope.cn/v1/chat/completions"
 
 ### 第 3 步：配置环境变量
 
-在创空间的「环境变量 / Secrets」里加上：
+> ✅ **好消息**：如果你是用本项目的 `ms_deploy.json` / `dist/MindForge_studio.zip` 创建的，下表 9 项里**已有 8 项自动配好**（写在官方 `environment_variables` 字段里）。**你只需要手动补 `LLM_API_KEY` 这一项。**
+
+在创空间的「环境变量 / Secrets」里确认 / 补上：
 
 ```ini
 LLM_API_KEY      = ms-xxxxxxxx（必须是 ms- 开头的写权限令牌）

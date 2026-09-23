@@ -2,5 +2,39 @@
   "$schema": "https://modelscope.cn/api/v1/studios/deploy_schema.json",
   "sdk_type": "docker",
   "resource_configuration": "platform/2v-cpu-16g-mem",
-  "port": 7860
+  "port": 7860,
+  "environment_variables": [
+    {
+      "name": "PORT",
+      "value": "7860"
+    },
+    {
+      "name": "LLM_BASE_URL",
+      "value": "https://api-inference.modelscope.cn/v1"
+    },
+    {
+      "name": "FAST_MODEL",
+      "value": "deepseek-ai/DeepSeek-V4.1-Flash"
+    },
+    {
+      "name": "STRONG_MODEL",
+      "value": "deepseek-ai/DeepSeek-V4-Pro"
+    },
+    {
+      "name": "CORS_ORIGINS",
+      "value": "*"
+    },
+    {
+      "name": "TIMEOUT_MS",
+      "value": "30000"
+    },
+    {
+      "name": "MAX_TURNS",
+      "value": "40"
+    },
+    {
+      "name": "MAX_DURATION_MIN",
+      "value": "20"
+    }
+  ]
 }
